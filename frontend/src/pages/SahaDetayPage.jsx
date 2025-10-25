@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { AuthContext } from '../App';
+import WeeklyCalendar from '../components/WeeklyCalendar';
 import './SahaDetayPage.css';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
