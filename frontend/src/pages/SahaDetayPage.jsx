@@ -61,6 +61,11 @@ function SahaDetayPage() {
     }
   };
 
+  const handleCalendarSlotSelect = (date, time) => {
+    setBookingData({ ...bookingData, date, time });
+    toast.success(`${date} - ${time} seçildi`);
+  };
+
   const handleBooking = async () => {
     if (!bookingData.date || !bookingData.time) {
       toast.error('Lütfen tarih ve saat seçin');
