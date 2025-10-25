@@ -826,9 +826,69 @@ async def create_team_search(team: TeamSearchCreate, user: Dict = Depends(get_cu
     return {"status": "success", "team_search": team_dict}
 
 @api_router.get("/team-search")
-async def get_team_searches():
-    searches = await db.team_searches.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+async def get_team_searches(
+    city: Optional[str] = None,
+    position: Optional[str] = None,
+    intensity: Optional[str] = None
+):
+    query = {}
+    if city:
+        query['location_city'] = city
+    if position and position != 'farketmez':
+        query['position'] = position
+    if intensity:
+        query['intensity_level'] = intensity
+    
+    searches = await db.team_searches.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Enrich with field and user data
+    for search in searches:
+        if search.get('field_id'):
+            field = await db.fields.find_one({"id": search['field_id']}, {"_id": 0})
+            if field:
+                search['field_name'] = field['name']
+                search['field_city'] = field['city']
+        
+        user = await db.users.find_one({"id": search['user_id']}, {"_id": 0})
+        if user:
+            search['creator_name'] = user['name']
+    
     return {"team_searches": searches}
+
+@api_router.post("/team-search/{search_id}/join")
+async def join_team_search(search_id: str, user: Dict = Depends(get_current_user)):
+    """Join a team search"""
+    search = await db.team_searches.find_one({"id": search_id}, {"_id": 0})
+    if not search:
+        raise HTTPException(status_code=404, detail="Search not found")
+    
+    # Check if user already joined
+    participants = search.get('participants', [])
+    if user['id'] in participants:
+        raise HTTPException(status_code=400, detail="Already joined")
+    
+    # Check if creator
+    if search['user_id'] == user['id']:
+        raise HTTPException(status_code=400, detail="Cannot join your own search")
+    
+    # Add participant
+    participants.append(user['id'])
+    await db.team_searches.update_one(
+        {"id": search_id},
+        {"$set": {"participants": participants}}
+    )
+    
+    # Create notification for creator
+    notif = Notification(
+        user_id=search['user_id'],
+        type="team",
+        message=f"{user['name']} takım aramanıza katıldı!"
+    )
+    notif_dict = notif.model_dump()
+    notif_dict['created_at'] = notif_dict['created_at'].isoformat()
+    await db.notifications.insert_one(notif_dict)
+    
+    return {"status": "success", "message": "Takıma katıldınız!"}
 
 @api_router.delete("/team-search/{search_id}")
 async def delete_team_search(search_id: str, user: Dict = Depends(get_current_user)):
