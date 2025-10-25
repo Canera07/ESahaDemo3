@@ -111,10 +111,16 @@ class TeamSearch(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
     field_id: Optional[str] = None
+    location_city: Optional[str] = None
+    location_district: Optional[str] = None
+    location_text: Optional[str] = None
     date: str
     time: str
-    position: str  # kaleci, defans, orta saha, forvet
+    position: str  # kaleci, defans, orta saha, forvet, farketmez
+    missing_players_count: int = 1
+    intensity_level: str = "orta"  # hafif, orta, rekabetçi
     message: str
+    participants: List[str] = []  # user IDs who joined
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class Notification(BaseModel):
