@@ -433,6 +433,81 @@ async def get_availability(field_id: str, date: str):
         "booked_slots": booked_times
     }
 
+@api_router.get("/fields/{field_id}/calendar")
+async def get_field_calendar(field_id: str):
+    """Get weekly calendar view for a field"""
+    from datetime import date, timedelta
+    
+    field = await db.fields.find_one({"id": field_id}, {"_id": 0})
+    if not field:
+        raise HTTPException(status_code=404, detail="Field not found")
+    
+    # Get next 7 days
+    today = date.today()
+    days_data = []
+    
+    for day_offset in range(7):
+        current_date = today + timedelta(days=day_offset)
+        date_str = current_date.isoformat()
+        
+        # Get bookings for this date
+        bookings = await db.bookings.find({
+            "field_id": field_id,
+            "date": date_str,
+            "status": {"$in": ["confirmed", "pending"]}
+        }, {"_id": 0}).to_list(100)
+        
+        # Create slots for each hour (09:00 - 23:00)
+        slots = []
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        
+        for hour in range(9, 24):
+            start_time = f"{hour:02d}:00"
+            end_time = f"{(hour + 1):02d}:00"
+            
+            # Check if this slot is booked
+            is_booked = any(b['time'] == start_time for b in bookings)
+            
+            # Check if it's in the past
+            slot_datetime = datetime.fromisoformat(f"{date_str}T{start_time}:00")
+            is_past = slot_datetime < now
+            
+            # Determine status
+            if is_past:
+                status = "past"
+                bookable = False
+            elif is_booked:
+                # Check if it's subscription
+                booking = next((b for b in bookings if b['time'] == start_time), None)
+                if booking and booking.get('is_subscription'):
+                    status = "subscription_locked"
+                else:
+                    status = "reserved"
+                bookable = False
+            else:
+                status = "available"
+                bookable = True
+            
+            slots.append({
+                "start": start_time,
+                "end": end_time,
+                "status": status,
+                "bookable": bookable
+            })
+        
+        days_data.append({
+            "date": date_str,
+            "day_name": current_date.strftime("%A"),
+            "day_number": current_date.day,
+            "slots": slots
+        })
+    
+    return {
+        "field_id": field_id,
+        "field_name": field['name'],
+        "days": days_data
+    }
+
 # ==================== BOOKINGS ROUTES ====================
 
 @api_router.post("/bookings")
