@@ -143,6 +143,12 @@ function SahaDetayPage() {
 
         <div className="saha-detail-grid">
           <div className="saha-info-section">
+            {/* Weekly Calendar */}
+            <WeeklyCalendar 
+              fieldId={id}
+              onSlotSelect={handleCalendarSlotSelect}
+            />
+
             <div className="saha-images">
               {field.photos && field.photos.length > 0 ? (
                 <img src={field.photos[0]} alt={field.name} className="main-image" />
