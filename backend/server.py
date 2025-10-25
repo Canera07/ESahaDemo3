@@ -383,7 +383,7 @@ async def create_field(field: FieldCreate, user: Dict = Depends(get_current_user
     if user['role'] != 'owner':
         raise HTTPException(status_code=403, detail="Only owners can create fields")
     
-    new_field = Field(
+    new_field = FieldModel(
         owner_id=user['id'],
         **field.model_dump()
     )
