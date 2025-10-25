@@ -391,9 +391,15 @@ async def create_field(field: FieldCreate, user: Dict = Depends(get_current_user
     field_dict = new_field.model_dump()
     field_dict['created_at'] = field_dict['created_at'].isoformat()
     
-    await db.fields.insert_one(field_dict)
+    result = await db.fields.insert_one(field_dict)
     
-    return {"status": "success", "field": field_dict}
+    # Return the field data without MongoDB _id
+    return {"status": "success", "field": {
+        "id": field_dict['id'],
+        "name": field_dict['name'],
+        "city": field_dict['city'],
+        "price": field_dict['price']
+    }}
 
 @api_router.get("/fields/{field_id}/availability")
 async def get_availability(field_id: str, date: str):
