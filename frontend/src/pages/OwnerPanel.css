@@ -1,0 +1,103 @@
+.owner-panel-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.panel-header h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+.panel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.panel-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.panel-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #2E7D32;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.fields-list,
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.owner-field-card {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #2E7D32;
+}
+
+.owner-field-card h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.owner-field-card p {
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.owner-booking-card {
+  background: #f8f9fa;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.booking-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.booking-info p {
+  margin: 0;
+  color: #666;
+}
+
+@media (max-width: 1024px) {
+  .panel-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,172 @@
+.profil-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.profil-grid {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.profil-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.user-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.user-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0 auto 1.5rem;
+}
+
+.user-card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.user-card p {
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.user-role {
+  background: #2E7D32;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: inline-block;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+.loyalty-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.loyalty-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.tac-display {
+  font-size: 3rem;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.loyalty-desc {
+  text-align: center;
+  color: #666;
+  margin-top: 1rem;
+}
+
+.profil-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.profil-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.booking-card {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #2E7D32;
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.booking-header h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.booking-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2E7D32;
+}
+
+.booking-details p {
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.support-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.support-section h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.support-section p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.support-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1024px) {
+  .profil-grid {
+    grid-template-columns: 1fr;
+  }
+}
