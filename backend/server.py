@@ -172,9 +172,14 @@ class ReviewCreate(BaseModel):
 
 class TeamSearchCreate(BaseModel):
     field_id: Optional[str] = None
+    location_city: Optional[str] = None
+    location_district: Optional[str] = None
+    location_text: Optional[str] = None
     date: str
     time: str
     position: str
+    missing_players_count: int = 1
+    intensity_level: str = "orta"
     message: str
 
 # ==================== AUTH HELPERS ====================
