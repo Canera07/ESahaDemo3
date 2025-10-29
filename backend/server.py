@@ -994,19 +994,17 @@ async def mark_notification_read(notif_id: str, user: Dict = Depends(get_current
     )
     return {"status": "success"}
 
-# ==================== LOYALTY ROUTES ====================
+# ==================== LOYALTY ROUTES (DISABLED) ====================
+# Loyalty system has been removed as per business requirement
 
-@api_router.get("/loyalty/status")
-async def get_loyalty_status(user: Dict = Depends(get_current_user)):
-    altin_tac = user.get('altin_tac', 0)
-    progress = (altin_tac % 5) / 5 * 100
-    eligible_for_discount = altin_tac >= 5
-    
-    return {
-        "altin_tac": altin_tac,
-        "progress": progress,
-        "eligible_for_discount": eligible_for_discount
-    }
+# @api_router.get("/loyalty/status")
+# async def get_loyalty_status(user: Dict = Depends(get_current_user)):
+#     return {
+#         "altin_tac": 0,
+#         "progress": 0,
+#         "eligible_for_discount": False,
+#         "message": "Sadakat sistemi devre dışı bırakılmıştır"
+#     }
 
 # Include the router in the main app
 app.include_router(api_router)
