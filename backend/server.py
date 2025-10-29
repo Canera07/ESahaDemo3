@@ -530,40 +530,69 @@ async def create_booking(booking: BookingCreate, user: Dict = Depends(get_curren
     if not field:
         raise HTTPException(status_code=404, detail="Field not found")
     
+    # Validate datetime fields
+    if not booking.start_datetime or not booking.end_datetime:
+        raise HTTPException(status_code=400, detail="Lütfen saat seçin")
+    
+    # Check if field has pricing
+    base_price = field.get('base_price_per_hour') or field.get('price')
+    if not base_price:
+        raise HTTPException(status_code=400, detail="Bu saha için fiyat tanımlı değil")
+    
+    # Extract date and time for backward compatibility
+    try:
+        start_dt = datetime.fromisoformat(booking.start_datetime.replace('Z', '+00:00'))
+        end_dt = datetime.fromisoformat(booking.end_datetime.replace('Z', '+00:00'))
+        date_str = start_dt.strftime("%Y-%m-%d")
+        time_str = start_dt.strftime("%H:%M")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Geçersiz tarih formatı")
+    
     # Check availability
     existing = await db.bookings.find_one({
         "field_id": booking.field_id,
-        "date": booking.date,
-        "time": booking.time,
-        "status": {"$in": ["confirmed", "pending"]}
+        "date": date_str,
+        "time": time_str,
+        "status": {"$in": ["paid", "confirmed", "pending"]}
     }, {"_id": 0})
     
     if existing:
-        raise HTTPException(status_code=400, detail="Time slot already booked")
+        raise HTTPException(status_code=400, detail="Bu saat dolu")
     
-    # Calculate amount
+    # Calculate amounts
+    platform_fee = 50.0
+    
     if booking.is_subscription:
         # 4 matches subscription
-        base_amount = field['price'] * 4
+        base_amount = base_price * 4
         
         # Check for loyalty discount
         if user.get('altin_tac', 0) >= 5:
-            discount = field['price'] * 0.10  # 10% of 1 match
-            amount = base_amount - discount
+            discount = base_price * 0.10  # 10% of 1 match
+            total_amount_user_paid = base_amount - discount
         else:
-            amount = base_amount
+            total_amount_user_paid = base_amount
         
+        owner_share_amount = base_amount
         matches_remaining = 4
     else:
-        amount = field['price']
+        total_amount_user_paid = base_price + platform_fee
+        owner_share_amount = base_price
         matches_remaining = 1
     
+    # Create booking
     new_booking = Booking(
         user_id=user['id'],
         field_id=booking.field_id,
-        date=booking.date,
-        time=booking.time,
-        amount=amount,
+        start_datetime=booking.start_datetime,
+        end_datetime=booking.end_datetime,
+        date=date_str,
+        time=time_str,
+        status="paid",
+        total_amount_user_paid=total_amount_user_paid,
+        owner_share_amount=owner_share_amount,
+        platform_fee_amount=platform_fee,
+        amount=total_amount_user_paid,  # For backward compatibility
         is_subscription=booking.is_subscription,
         matches_remaining=matches_remaining
     )
@@ -572,6 +601,10 @@ async def create_booking(booking: BookingCreate, user: Dict = Depends(get_curren
     booking_dict['created_at'] = booking_dict['created_at'].isoformat()
     
     await db.bookings.insert_one(booking_dict)
+    
+    # Update availability - mark slot as unavailable
+    # Note: We'll need to add an availabilities collection for this
+    # For now, the booking existence itself marks the slot as unavailable
     
     return {"status": "success", "booking": booking_dict}
 
