@@ -96,26 +96,6 @@ function ProfilPage() {
               <p>{user.email}</p>
               <p className="user-role">{user.role === 'user' ? 'Oyuncu' : 'Saha Sahibi'}</p>
             </div>
-
-            {user.role === 'user' && loyaltyStatus && (
-              <div className="loyalty-card" data-testid="loyalty-card">
-                <h3>Altın Taç Programı</h3>
-                <div className="tac-display">
-                  👑 {loyaltyStatus.altin_tac}
-                </div>
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${loyaltyStatus.progress}%` }}
-                  ></div>
-                </div>
-                <p className="loyalty-desc">
-                  {loyaltyStatus.eligible_for_discount
-                    ? '🎉 %10 indirim hakkınız var!'
-                    : `${5 - (loyaltyStatus.altin_tac % 5)} maç daha!`}
-                </p>
-              </div>
-            )}
           </div>
 
           <div className="profil-content">
