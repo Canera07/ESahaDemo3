@@ -407,9 +407,34 @@ async def create_field(field: FieldCreate, user: Dict = Depends(get_current_user
     if user['role'] != 'owner':
         raise HTTPException(status_code=403, detail="Only owners can create fields")
     
+    # Validate required fields
+    if not field.tax_number or not field.iban:
+        raise HTTPException(status_code=400, detail="Vergi numarası ve IBAN zorunludur")
+    
+    # Validate tax_number format (basic check)
+    if len(field.tax_number.strip()) < 10:
+        raise HTTPException(status_code=400, detail="Geçersiz vergi numarası formatı")
+    
+    # Validate IBAN format (basic check)
+    if not field.iban.strip().startswith('TR') or len(field.iban.strip()) < 20:
+        raise HTTPException(status_code=400, detail="Geçersiz IBAN formatı (TR ile başlamalı)")
+    
     new_field = FieldModel(
         owner_id=user['id'],
-        **field.model_dump()
+        name=field.name,
+        city=field.city,
+        address=field.address,
+        location=field.location,
+        price=field.base_price_per_hour,  # For backward compatibility
+        base_price_per_hour=field.base_price_per_hour,
+        subscription_price_4_match=field.subscription_price_4_match,
+        photos=field.photos,
+        phone=field.phone,
+        tax_number=field.tax_number,
+        iban=field.iban,
+        approved=False,
+        tax_verified=False,
+        subscription_prices_pending_review=True
     )
     
     field_dict = new_field.model_dump()
@@ -422,7 +447,9 @@ async def create_field(field: FieldCreate, user: Dict = Depends(get_current_user
         "id": field_dict['id'],
         "name": field_dict['name'],
         "city": field_dict['city'],
-        "price": field_dict['price']
+        "price": field_dict['price'],
+        "approved": field_dict['approved'],
+        "message": "Saha eklendi. Admin onayı bekleniyor."
     }}
 
 @api_router.get("/fields/{field_id}/availability")
