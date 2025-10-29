@@ -300,8 +300,7 @@ async def login(req: LoginRequest, response: Response):
             "id": user['id'],
             "email": user['email'],
             "name": user['name'],
-            "role": user['role'],
-            "altin_tac": user.get('altin_tac', 0)
+            "role": user['role']
         }
     }
 
