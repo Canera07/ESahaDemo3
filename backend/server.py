@@ -586,23 +586,17 @@ async def create_booking(booking: BookingCreate, user: Dict = Depends(get_curren
     if existing:
         raise HTTPException(status_code=400, detail="Bu saat dolu")
     
-    # Calculate amounts
+    # Calculate amounts - NO LOYALTY DISCOUNT
     platform_fee = 50.0
     
     if booking.is_subscription:
-        # 4 matches subscription
+        # 4 matches subscription - simple calculation
         base_amount = base_price * 4
-        
-        # Check for loyalty discount
-        if user.get('altin_tac', 0) >= 5:
-            discount = base_price * 0.10  # 10% of 1 match
-            total_amount_user_paid = base_amount - discount
-        else:
-            total_amount_user_paid = base_amount
-        
+        total_amount_user_paid = base_amount + (platform_fee * 4)
         owner_share_amount = base_amount
         matches_remaining = 4
     else:
+        # Single match - simple calculation
         total_amount_user_paid = base_price + platform_fee
         owner_share_amount = base_price
         matches_remaining = 1
