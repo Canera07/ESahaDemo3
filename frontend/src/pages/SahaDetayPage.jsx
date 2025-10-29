@@ -167,18 +167,19 @@ function SahaDetayPage() {
   }
 
   const calculatePrice = () => {
+    const basePrice = field.base_price_per_hour || field.price;
     if (bookingData.is_subscription) {
-      const basePrice = field.price * 4;
+      const totalBasePrice = basePrice * 4;
       const platformFee = 50 * 4;
       return { 
-        total: basePrice + platformFee,
-        basePrice: basePrice,
+        total: totalBasePrice + platformFee,
+        basePrice: totalBasePrice,
         platformFee: platformFee
       };
     }
     return { 
-      total: field.price + 50,
-      basePrice: field.price,
+      total: basePrice + 50,
+      basePrice: basePrice,
       platformFee: 50
     };
   };
