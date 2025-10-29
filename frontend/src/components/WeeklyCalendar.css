@@ -109,11 +109,20 @@
 .slot-time {
   font-weight: 700;
   margin-bottom: 0.25rem;
+  font-size: 0.8rem;
 }
 
 .slot-status {
   font-size: 0.7rem;
   text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.slot-price {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #2E7D32;
+  margin-top: 0.25rem;
 }
 
 .slot-available {
