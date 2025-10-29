@@ -171,8 +171,10 @@ class FieldCreate(BaseModel):
 
 class BookingCreate(BaseModel):
     field_id: str
-    date: str
-    time: str
+    start_datetime: str
+    end_datetime: str
+    date: Optional[str] = None  # For backward compatibility
+    time: Optional[str] = None  # For backward compatibility
     is_subscription: bool = False
 
 class ReviewCreate(BaseModel):
