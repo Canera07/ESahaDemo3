@@ -68,22 +68,60 @@ function SahaDetayPage() {
 
   const handleBooking = async () => {
     if (!bookingData.date || !bookingData.time) {
-      toast.error('Lütfen tarih ve saat seçin');
+      toast.error('Lütfen saat seçin');
       return;
     }
 
     try {
       const token = localStorage.getItem('session_token');
+      
+      // Calculate start and end datetime
+      const startDateTime = `${bookingData.date}T${bookingData.time}:00`;
+      const startDate = new Date(startDateTime);
+      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // +1 hour
+      const endDateTime = endDate.toISOString().slice(0, 19);
+      
+      // Calculate amounts
+      const platformFee = 50;
+      const basePrice = field.base_price_per_hour || field.price;
+      
+      if (!basePrice) {
+        toast.error('Bu saha için fiyat tanımlı değil');
+        return;
+      }
+      
+      let totalAmountUserPaid, ownerShareAmount;
+      
+      if (bookingData.is_subscription) {
+        const baseAmount = basePrice * 4;
+        if (user.altin_tac >= 5) {
+          const discount = basePrice * 0.10;
+          totalAmountUserPaid = baseAmount - discount;
+        } else {
+          totalAmountUserPaid = baseAmount;
+        }
+        ownerShareAmount = baseAmount;
+      } else {
+        totalAmountUserPaid = basePrice + platformFee;
+        ownerShareAmount = basePrice;
+      }
+      
       const response = await axios.post(
         `${API}/bookings`,
         {
           field_id: id,
-          ...bookingData
+          start_datetime: startDateTime,
+          end_datetime: endDateTime,
+          date: bookingData.date,
+          time: bookingData.time,
+          is_subscription: bookingData.is_subscription
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const booking = response.data.booking;
+      
+      toast.success('Rezervasyon oluşturuldu!');
       
       // Redirect to payment
       const paymentRes = await axios.post(
