@@ -163,11 +163,12 @@ class FieldCreate(BaseModel):
     city: str
     address: str
     location: Dict[str, float]
-    price: float
+    base_price_per_hour: float
+    subscription_price_4_match: Optional[float] = None
     photos: List[str] = []
     phone: str
-    tax_number: Optional[str] = None
-    iban: Optional[str] = None
+    tax_number: str  # tax_id - required
+    iban: str  # required
 
 class BookingCreate(BaseModel):
     field_id: str
