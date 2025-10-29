@@ -76,11 +76,16 @@ class Booking(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     user_id: str
     field_id: str
-    date: str  # YYYY-MM-DD
-    time: str  # HH:MM
+    start_datetime: str  # ISO format datetime
+    end_datetime: str  # ISO format datetime
+    date: str  # YYYY-MM-DD (for backward compatibility)
+    time: str  # HH:MM (for backward compatibility)
     duration: int = 90  # minutes
-    status: str = "pending"  # pending, confirmed, cancelled, completed
-    amount: float
+    status: str = "paid"  # paid, confirmed, cancelled, completed
+    total_amount_user_paid: float
+    owner_share_amount: float
+    platform_fee_amount: float = 50.0
+    amount: float  # Total amount (for backward compatibility)
     is_subscription: bool = False
     matches_remaining: int = 1
     merchant_oid: Optional[str] = None
