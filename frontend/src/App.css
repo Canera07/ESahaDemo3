@@ -201,6 +201,23 @@ body {
   background: #f5f5f5;
 }
 
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Manrope', sans-serif;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #2E7D32;
+}
+
 .form-textarea {
   resize: vertical;
   min-height: 100px;
