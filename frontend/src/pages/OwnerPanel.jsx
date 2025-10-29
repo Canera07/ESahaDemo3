@@ -182,25 +182,41 @@ function OwnerPanel() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Fiyat (TL/Saat)</label>
+                  <label className="form-label">Saat Başı Fiyat (TL) *</label>
                   <input
                     type="number"
                     className="form-input"
-                    value={fieldForm.price}
-                    onChange={(e) => setFieldForm({ ...fieldForm, price: e.target.value })}
+                    value={fieldForm.base_price_per_hour}
+                    onChange={(e) => setFieldForm({ ...fieldForm, base_price_per_hour: e.target.value })}
                     required
+                    placeholder="Örn: 300"
                     data-testid="field-price-input"
                   />
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Telefon</label>
+                  <label className="form-label">4 Maçlık Abonelik Fiyatı (TL)</label>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={fieldForm.subscription_price_4_match}
+                    onChange={(e) => setFieldForm({ ...fieldForm, subscription_price_4_match: e.target.value })}
+                    placeholder="Örn: 1200"
+                    data-testid="field-subscription-input"
+                  />
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Telefon *</label>
                   <input
                     type="tel"
                     className="form-input"
                     value={fieldForm.phone}
                     onChange={(e) => setFieldForm({ ...fieldForm, phone: e.target.value })}
                     required
+                    placeholder="05XX XXX XX XX"
                     data-testid="field-phone-input"
                   />
                 </div>
@@ -208,12 +224,14 @@ function OwnerPanel() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Vergi Numarası</label>
+                  <label className="form-label">Vergi Numarası *</label>
                   <input
                     type="text"
                     className="form-input"
                     value={fieldForm.tax_number}
                     onChange={(e) => setFieldForm({ ...fieldForm, tax_number: e.target.value })}
+                    required
+                    placeholder="10 haneli vergi numarası"
                     data-testid="field-tax-input"
                   />
                 </div>
