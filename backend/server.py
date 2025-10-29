@@ -371,8 +371,7 @@ async def get_session(user: Dict = Depends(get_current_user)):
         "id": user['id'],
         "email": user['email'],
         "name": user['name'],
-        "role": user['role'],
-        "altin_tac": user.get('altin_tac', 0)
+        "role": user['role']
     }
 
 @api_router.post("/auth/logout")
