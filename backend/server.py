@@ -62,11 +62,16 @@ class FieldModel(BaseModel):
     city: str
     address: str
     location: Dict[str, float]  # {"lat": 41.0, "lng": 29.0}
-    price: float
+    price: float  # base_price_per_hour
+    base_price_per_hour: float
+    subscription_price_4_match: Optional[float] = None
     photos: List[str] = []
     phone: str
-    tax_number: Optional[str] = None
+    tax_number: Optional[str] = None  # tax_id
     iban: Optional[str] = None
+    approved: bool = False
+    tax_verified: bool = False
+    subscription_prices_pending_review: bool = True
     rating: float = 0.0
     review_count: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
