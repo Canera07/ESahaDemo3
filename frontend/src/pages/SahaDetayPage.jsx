@@ -72,6 +72,11 @@ function SahaDetayPage() {
   const handleCalendarSlotSelect = (date, time) => {
     setBookingData({ ...bookingData, date, time });
     toast.success(`${date} - ${time} seçildi`);
+    
+    // Fetch availability for the selected date if not already loaded
+    if (availableSlots.length === 0 || availableSlots[0]?.date !== date) {
+      fetchAvailability(date);
+    }
   };
 
   const handleBooking = async () => {
