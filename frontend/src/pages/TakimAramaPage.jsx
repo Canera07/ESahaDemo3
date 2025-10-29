@@ -322,7 +322,7 @@ function TakimAramaPage() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Saat</label>
+                  <label className="form-label">Saat Aralığı</label>
                   <select
                     className="form-select"
                     value={formData.time}
@@ -330,12 +330,17 @@ function TakimAramaPage() {
                     required
                     data-testid="search-time-select"
                   >
-                    <option value="">Saat seçin</option>
-                    {Array.from({ length: 24 }, (_, i) => i).map(hour => (
-                      <option key={hour} value={`${hour.toString().padStart(2, '0')}:00`}>
-                        {hour.toString().padStart(2, '0')}:00
-                      </option>
-                    ))}
+                    <option value="">Saat aralığı seçin</option>
+                    {Array.from({ length: 24 }, (_, i) => {
+                      const start = i.toString().padStart(2, '0') + ':00';
+                      const endHour = (i + 1) % 24;
+                      const end = endHour.toString().padStart(2, '0') + ':00';
+                      return (
+                        <option key={i} value={start}>
+                          {start} - {end}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
               </div>
