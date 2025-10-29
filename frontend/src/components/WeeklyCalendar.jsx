@@ -49,21 +49,6 @@ function WeeklyCalendar({ fieldId, onSlotSelect }) {
     }
   };
 
-  const getSlotLabel = (slot) => {
-    switch (slot.status) {
-      case 'available':
-        return 'Boş';
-      case 'reserved':
-        return 'Dolu';
-      case 'subscription_locked':
-        return 'Abonelik';
-      case 'past':
-        return 'Geçmiş';
-      default:
-        return '';
-    }
-  };
-
   const getDayName = (dayName) => {
     const days = {
       'Monday': 'Pzt',
