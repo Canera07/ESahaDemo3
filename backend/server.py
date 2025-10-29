@@ -782,8 +782,7 @@ async def payment_callback(request: Request, background_tasks: BackgroundTasks):
         trans_dict['created_at'] = trans_dict['created_at'].isoformat()
         await db.transactions.insert_one(trans_dict)
         
-        # Update user's altin_tac
-        await db.users.update_one({"id": booking['user_id']}, {"$inc": {"altin_tac": 1}})
+        # NO LOYALTY UPDATE - System removed
         
         # Create notification for field owner
         field = await db.fields.find_one({"id": booking['field_id']}, {"_id": 0})
