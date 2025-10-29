@@ -20,7 +20,8 @@ function OwnerPanel() {
     city: '',
     address: '',
     location: { lat: 41.0082, lng: 28.9784 },
-    price: '',
+    base_price_per_hour: '',
+    subscription_price_4_match: '',
     phone: '',
     tax_number: '',
     iban: ''
