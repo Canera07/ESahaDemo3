@@ -118,8 +118,9 @@ function WeeklyCalendar({ fieldId, onSlotSelect }) {
                     onClick={() => handleSlotClick(day, slot)}
                     data-testid={`slot-${day.date}-${slot.start}`}
                   >
-                    <div className="slot-time">{slot.start}</div>
-                    <div className="slot-status">{getSlotLabel(slot)}</div>
+                    <div className="slot-time">{slot.label}</div>
+                    <div className="slot-status">{slot.status_label}</div>
+                    <div className="slot-price">{slot.price.toLocaleString('tr-TR')} TL/saat</div>
                   </div>
                 ))}
               </div>
