@@ -87,14 +87,24 @@ function SahaDetayPage() {
       return;
     }
 
+    // Find the selected slot to get end time
+    const selectedSlot = availableSlots.find(s => s.start === bookingData.time);
+    if (!selectedSlot) {
+      toast.error('Geçersiz saat seçimi');
+      return;
+    }
+
+    if (!selectedSlot.bookable) {
+      toast.error('Bu saat aralığı dolu. Lütfen farklı bir zaman seçin.');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('session_token');
       
-      // Calculate start and end datetime
-      const startDateTime = `${bookingData.date}T${bookingData.time}:00`;
-      const startDate = new Date(startDateTime);
-      const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // +1 hour
-      const endDateTime = endDate.toISOString().slice(0, 19);
+      // Calculate start and end datetime using slot data
+      const startDateTime = `${bookingData.date}T${selectedSlot.start}:00`;
+      const endDateTime = `${bookingData.date}T${selectedSlot.end}:00`;
       
       // Calculate amounts - NO LOYALTY DISCOUNT
       const platformFee = 50;
