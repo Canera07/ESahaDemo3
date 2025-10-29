@@ -633,7 +633,17 @@ async def create_booking(booking: BookingCreate, user: Dict = Depends(get_curren
     # Note: We'll need to add an availabilities collection for this
     # For now, the booking existence itself marks the slot as unavailable
     
-    return {"status": "success", "booking": booking_dict}
+    # Return clean booking data without _id
+    return {"status": "success", "booking": {
+        "id": booking_dict['id'],
+        "field_id": booking_dict['field_id'],
+        "start_datetime": booking_dict['start_datetime'],
+        "end_datetime": booking_dict['end_datetime'],
+        "status": booking_dict['status'],
+        "total_amount_user_paid": booking_dict['total_amount_user_paid'],
+        "owner_share_amount": booking_dict['owner_share_amount'],
+        "platform_fee_amount": booking_dict['platform_fee_amount']
+    }}
 
 @api_router.get("/bookings")
 async def get_bookings(user: Dict = Depends(get_current_user)):
