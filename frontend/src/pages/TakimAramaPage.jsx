@@ -66,14 +66,15 @@ function TakimAramaPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
 
     try {
       const token = localStorage.getItem('session_token');
-      await axios.post(`${API}/team-search`, formData, {
+      const response = await axios.post(`${API}/team-search`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      toast.success('İlanınız yayınlandı!');
+      toast.success(response.data.message || 'İlanınız yayınlandı!');
       setShowForm(false);
       setFormData({
         field_id: '',
@@ -89,7 +90,15 @@ function TakimAramaPage() {
       });
       fetchSearches();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'İlan oluşturulamadı');
+      if (error.response?.status === 401) {
+        toast.error('Oturum süresi doldu, lütfen yeniden giriş yapın.');
+        // Optionally redirect to login
+        // navigate('/auth');
+      } else {
+        toast.error(error.response?.data?.detail || 'İlan oluşturulamadı');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
