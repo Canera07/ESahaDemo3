@@ -240,7 +240,7 @@ function SahaDetayPage() {
                 />
               </div>
 
-              {availability.length > 0 && (
+              {availableSlots.length > 0 && (
                 <div className="form-group">
                   <label className="form-label">Saat</label>
                   <select
@@ -250,8 +250,14 @@ function SahaDetayPage() {
                     data-testid="booking-time-select"
                   >
                     <option value="">Saat seçin</option>
-                    {availability.map(slot => (
-                      <option key={slot} value={slot}>{slot}</option>
+                    {availableSlots.map(slot => (
+                      <option 
+                        key={slot.start} 
+                        value={slot.start}
+                        disabled={!slot.bookable}
+                      >
+                        {slot.label} - {slot.status_label} {slot.bookable ? '' : '(Dolu)'}
+                      </option>
                     ))}
                   </select>
                 </div>
