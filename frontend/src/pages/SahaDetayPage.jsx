@@ -261,14 +261,20 @@ function SahaDetayPage() {
                 </label>
               </div>
 
-              {bookingData.is_subscription && user.altin_tac >= 5 && (
-                <div className="discount-info" data-testid="discount-info">
-                  🎉 Sadakat indirimi uygulandı! -{priceInfo.discount.toFixed(2)} TL
-                </div>
-              )}
+              <div className="platform-fee-info">
+                <p>ℹ️ Rezervasyon tutarına platform hizmet bedeli (50 TL) dahildir.</p>
+              </div>
 
               <div className="price-summary">
                 <div className="price-row">
+                  <span>Saha Ücreti</span>
+                  <span>{priceInfo.basePrice.toFixed(2)} TL</span>
+                </div>
+                <div className="price-row">
+                  <span>Platform Hizmet Bedeli</span>
+                  <span>{priceInfo.platformFee.toFixed(2)} TL</span>
+                </div>
+                <div className="price-row total">
                   <span>Toplam</span>
                   <span className="price-value" data-testid="total-price">{priceInfo.total.toFixed(2)} TL</span>
                 </div>
