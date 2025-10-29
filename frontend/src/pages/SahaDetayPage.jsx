@@ -144,13 +144,18 @@ function SahaDetayPage() {
   const calculatePrice = () => {
     if (bookingData.is_subscription) {
       const basePrice = field.price * 4;
-      if (user.altin_tac >= 5) {
-        const discount = field.price * 0.10;
-        return { total: basePrice - discount, discount };
-      }
-      return { total: basePrice, discount: 0 };
+      const platformFee = 50 * 4;
+      return { 
+        total: basePrice + platformFee,
+        basePrice: basePrice,
+        platformFee: platformFee
+      };
     }
-    return { total: field.price, discount: 0 };
+    return { 
+      total: field.price + 50,
+      basePrice: field.price,
+      platformFee: 50
+    };
   };
 
   const priceInfo = calculatePrice();
