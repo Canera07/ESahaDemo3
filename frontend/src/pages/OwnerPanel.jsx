@@ -237,15 +237,22 @@ function OwnerPanel() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">IBAN</label>
+                  <label className="form-label">IBAN *</label>
                   <input
                     type="text"
                     className="form-input"
                     value={fieldForm.iban}
                     onChange={(e) => setFieldForm({ ...fieldForm, iban: e.target.value })}
+                    required
+                    placeholder="TR XX XXXX XXXX XXXX XXXX XXXX XX"
                     data-testid="field-iban-input"
                   />
                 </div>
+              </div>
+
+              <div className="form-info">
+                <p>* ile işaretli alanlar zorunludur</p>
+                <p>Sahanız admin onayından sonra yayınlanacaktır.</p>
               </div>
 
               <button type="submit" className="btn btn-primary" data-testid="submit-field-btn">
