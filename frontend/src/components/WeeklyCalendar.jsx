@@ -86,19 +86,19 @@ function WeeklyCalendar({ fieldId, onSlotSelect }) {
       <div className="calendar-legend">
         <div className="legend-item">
           <span className="legend-dot available"></span>
-          <span>Boş</span>
+          <span>BOŞ</span>
         </div>
         <div className="legend-item">
           <span className="legend-dot reserved"></span>
-          <span>Dolu</span>
+          <span>DOLU</span>
         </div>
         <div className="legend-item">
           <span className="legend-dot subscription"></span>
-          <span>Abonelikli</span>
+          <span>ABONELİKLİ</span>
         </div>
         <div className="legend-item">
           <span className="legend-dot past"></span>
-          <span>Geçmiş</span>
+          <span>GEÇMİŞ</span>
         </div>
       </div>
 
