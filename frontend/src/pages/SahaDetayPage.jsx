@@ -249,24 +249,38 @@ function SahaDetayPage() {
 
               {availableSlots.length > 0 && (
                 <div className="form-group">
-                  <label className="form-label">Saat</label>
+                  <label className="form-label">Saat Aralığı</label>
                   <select
                     className="form-select"
                     value={bookingData.time}
-                    onChange={(e) => setBookingData({ ...bookingData, time: e.target.value })}
+                    onChange={(e) => {
+                      const selectedSlot = availableSlots.find(s => s.start === e.target.value);
+                      if (selectedSlot && !selectedSlot.bookable) {
+                        toast.error('Bu saat aralığı dolu. Lütfen farklı bir zaman seçin.');
+                        return;
+                      }
+                      setBookingData({ ...bookingData, time: e.target.value });
+                    }}
                     data-testid="booking-time-select"
                   >
-                    <option value="">Saat seçin</option>
+                    <option value="">Saat aralığı seçin</option>
                     {availableSlots.map(slot => (
                       <option 
                         key={slot.start} 
                         value={slot.start}
                         disabled={!slot.bookable}
+                        style={{
+                          color: slot.bookable ? '#2E7D32' : '#999',
+                          fontWeight: slot.bookable ? '500' : 'normal'
+                        }}
                       >
-                        {slot.label} - {slot.status_label} {slot.bookable ? '' : '(Dolu)'}
+                        {slot.label}
                       </option>
                     ))}
                   </select>
+                  <p className="form-helper-text">
+                    ℹ️ Takvimden de saat seçebilirsiniz
+                  </p>
                 </div>
               )}
 
