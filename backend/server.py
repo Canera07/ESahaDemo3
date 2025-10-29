@@ -472,12 +472,15 @@ async def get_availability(field_id: str, date: str):
 
 @api_router.get("/fields/{field_id}/calendar")
 async def get_field_calendar(field_id: str):
-    """Get weekly calendar view for a field"""
+    """Get weekly calendar view for a field with 24-hour slots"""
     from datetime import date, timedelta
     
     field = await db.fields.find_one({"id": field_id}, {"_id": 0})
     if not field:
         raise HTTPException(status_code=404, detail="Field not found")
+    
+    # Get pricing
+    base_price = field.get('base_price_per_hour') or field.get('price', 0)
     
     # Get next 7 days
     today = date.today()
@@ -491,16 +494,20 @@ async def get_field_calendar(field_id: str):
         bookings = await db.bookings.find({
             "field_id": field_id,
             "date": date_str,
-            "status": {"$in": ["confirmed", "pending"]}
+            "status": {"$in": ["confirmed", "pending", "paid"]}
         }, {"_id": 0}).to_list(100)
         
-        # Create slots for each hour (09:00 - 23:00)
+        # Create 24-hour slots (00:00 - 23:00)
         slots = []
         now = datetime.now(timezone.utc).replace(tzinfo=None)
         
-        for hour in range(9, 24):
+        for hour in range(24):
             start_time = f"{hour:02d}:00"
-            end_time = f"{(hour + 1):02d}:00"
+            end_hour = (hour + 1) % 24
+            end_time = f"{end_hour:02d}:00"
+            
+            # Format label
+            label = f"{start_time} - {end_time}"
             
             # Check if this slot is booked
             is_booked = any(b['time'] == start_time for b in bookings)
@@ -512,24 +519,31 @@ async def get_field_calendar(field_id: str):
             # Determine status
             if is_past:
                 status = "past"
+                status_label = "GEÇMİŞ"
                 bookable = False
             elif is_booked:
                 # Check if it's subscription
                 booking = next((b for b in bookings if b['time'] == start_time), None)
                 if booking and booking.get('is_subscription'):
                     status = "subscription_locked"
+                    status_label = "ABONELİKLİ"
                 else:
                     status = "reserved"
+                    status_label = "DOLU"
                 bookable = False
             else:
                 status = "available"
+                status_label = "BOŞ"
                 bookable = True
             
             slots.append({
                 "start": start_time,
                 "end": end_time,
+                "label": label,
                 "status": status,
-                "bookable": bookable
+                "status_label": status_label,
+                "bookable": bookable,
+                "price": base_price
             })
         
         days_data.append({
@@ -542,6 +556,7 @@ async def get_field_calendar(field_id: str):
     return {
         "field_id": field_id,
         "field_name": field['name'],
+        "base_price": base_price,
         "days": days_data
     }
 
