@@ -358,8 +358,7 @@ async def google_auth(req: GoogleAuthRequest, response: Response):
                 "id": user['id'],
                 "email": user['email'],
                 "name": user['name'],
-                "role": user['role'],
-                "altin_tac": user.get('altin_tac', 0)
+                "role": user['role']
             }
         }
     except requests.exceptions.RequestException as e:
