@@ -14,6 +14,7 @@ function TakimAramaPage() {
   const [searches, setSearches] = useState([]);
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [filters, setFilters] = useState({
     city: '',
