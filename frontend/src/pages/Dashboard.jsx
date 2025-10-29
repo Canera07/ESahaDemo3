@@ -72,31 +72,6 @@ function Dashboard() {
             </p>
           </div>
 
-          {user.role === 'user' && (
-            <div className="loyalty-section" data-testid="loyalty-section">
-              <div className="loyalty-card">
-                <div className="loyalty-header">
-                  <h3>Altın Taç Durumunuz</h3>
-                  <div className="tac-count" data-testid="tac-count">
-                    👑 {user.altin_tac} / 5
-                  </div>
-                </div>
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${(user.altin_tac % 5) * 20}%` }}
-                    data-testid="progress-bar"
-                  ></div>
-                </div>
-                <p className="loyalty-text">
-                  {user.altin_tac >= 5
-                    ? 'İndirim hakkınız hazır! 4 maçlık abonelik alırken kullanabilirsiniz.'
-                    : `${5 - (user.altin_tac % 5)} maç daha oynayın, %10 indirim kazanın!`}
-                </p>
-              </div>
-            </div>
-          )}
-
           <div className="quick-actions">
             <h2>Hızlı İşlemler</h2>
             <div className="actions-grid">
