@@ -15,6 +15,7 @@ function SahaDetayPage() {
   const navigate = useNavigate();
   const [field, setField] = useState(null);
   const [availability, setAvailability] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [bookingData, setBookingData] = useState({
