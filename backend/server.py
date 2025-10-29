@@ -886,6 +886,23 @@ async def get_reviews(field_id: str):
 
 @api_router.post("/team-search")
 async def create_team_search(team: TeamSearchCreate, user: Dict = Depends(get_current_user)):
+    """Create a new team search ad"""
+    
+    # Validate required fields
+    if not team.date or not team.time:
+        raise HTTPException(status_code=400, detail="Lütfen konum, tarih ve mevki bilgilerini doldurun.")
+    
+    if not team.position:
+        raise HTTPException(status_code=400, detail="Lütfen konum, tarih ve mevki bilgilerini doldurun.")
+    
+    # Check location - either field_id OR manual location required
+    if not team.field_id:
+        if not team.location_city or not team.location_district:
+            raise HTTPException(status_code=400, detail="Lütfen konum, tarih ve mevki bilgilerini doldurun.")
+    
+    if not team.message or len(team.message.strip()) < 10:
+        raise HTTPException(status_code=400, detail="Lütfen en az 10 karakter açıklama yazın.")
+    
     new_team = TeamSearch(
         user_id=user['id'],
         **team.model_dump()
@@ -896,7 +913,11 @@ async def create_team_search(team: TeamSearchCreate, user: Dict = Depends(get_cu
     
     await db.team_searches.insert_one(team_dict)
     
-    return {"status": "success", "team_search": team_dict}
+    return {
+        "success": True,
+        "message": "İlan başarıyla oluşturuldu.",
+        "ad_id": team_dict['id']
+    }
 
 @api_router.get("/team-search")
 async def get_team_searches(
