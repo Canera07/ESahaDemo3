@@ -66,6 +66,8 @@ function SahaDetayPage() {
     setBookingData({ ...bookingData, date, time: '' });
     if (date) {
       fetchAvailability(date);
+    } else {
+      setAvailableSlots([]);
     }
   };
 
