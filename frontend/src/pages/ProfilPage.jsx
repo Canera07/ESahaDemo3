@@ -22,17 +22,11 @@ function ProfilPage() {
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('session_token');
-      const [bookingsRes, loyaltyRes] = await Promise.all([
-        axios.get(`${API}/bookings`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${API}/loyalty/status`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
+      const bookingsRes = await axios.get(`${API}/bookings`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
       setBookings(bookingsRes.data.bookings);
-      setLoyaltyStatus(loyaltyRes.data);
     } catch (error) {
       toast.error('Veri yüklenemedi');
     } finally {
