@@ -49,6 +49,13 @@ function SahaDetayPage() {
     try {
       const response = await axios.get(`${API}/fields/${id}/availability?date=${date}`);
       setAvailability(response.data.available_slots);
+      
+      // Get detailed calendar data for the specific date
+      const calendarRes = await axios.get(`${API}/fields/${id}/calendar`);
+      const dayData = calendarRes.data.days.find(d => d.date === date);
+      if (dayData) {
+        setAvailableSlots(dayData.slots);
+      }
     } catch (error) {
       toast.error('Müsaitlik bilgisi alınamadı');
     }
