@@ -129,7 +129,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.125rem;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #666;
+}
+
+.price-row.total {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2E7D32;
+  padding-top: 0.75rem;
+  border-top: 2px solid #e0e0e0;
+  margin-top: 0.75rem;
 }
 
 .price-value {
