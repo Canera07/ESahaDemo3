@@ -41,6 +41,19 @@
   gap: 1rem;
 }
 
+.form-info {
+  background: #E8F5E9;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.form-info p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #2E7D32;
+}
+
 .fields-list,
 .bookings-list {
   display: flex;
