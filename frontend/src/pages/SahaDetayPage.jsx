@@ -81,7 +81,7 @@ function SahaDetayPage() {
       const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // +1 hour
       const endDateTime = endDate.toISOString().slice(0, 19);
       
-      // Calculate amounts
+      // Calculate amounts - NO LOYALTY DISCOUNT
       const platformFee = 50;
       const basePrice = field.base_price_per_hour || field.price;
       
@@ -94,12 +94,7 @@ function SahaDetayPage() {
       
       if (bookingData.is_subscription) {
         const baseAmount = basePrice * 4;
-        if (user.altin_tac >= 5) {
-          const discount = basePrice * 0.10;
-          totalAmountUserPaid = baseAmount - discount;
-        } else {
-          totalAmountUserPaid = baseAmount;
-        }
+        totalAmountUserPaid = baseAmount + (platformFee * 4);
         ownerShareAmount = baseAmount;
       } else {
         totalAmountUserPaid = basePrice + platformFee;
