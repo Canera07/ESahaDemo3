@@ -61,20 +61,32 @@ function OwnerPanel() {
   const handleAddField = async (e) => {
     e.preventDefault();
 
+    // Validate required fields
+    if (!fieldForm.tax_number || !fieldForm.iban) {
+      toast.error('Vergi numarası ve IBAN zorunludur');
+      return;
+    }
+
+    if (!fieldForm.base_price_per_hour) {
+      toast.error('Saat başı fiyat zorunludur');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('session_token');
-      await axios.post(`${API}/fields`, fieldForm, {
+      const response = await axios.post(`${API}/fields`, fieldForm, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      toast.success('Saha eklendi!');
+      toast.success(response.data.field.message || 'Saha eklendi!');
       setShowAddField(false);
       setFieldForm({
         name: '',
         city: '',
         address: '',
         location: { lat: 41.0082, lng: 28.9784 },
-        price: '',
+        base_price_per_hour: '',
+        subscription_price_4_match: '',
         phone: '',
         tax_number: '',
         iban: ''
