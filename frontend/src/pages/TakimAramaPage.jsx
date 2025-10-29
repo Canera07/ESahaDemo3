@@ -398,8 +398,13 @@ function TakimAramaPage() {
                 ></textarea>
               </div>
 
-              <button type="submit" className="btn btn-primary" data-testid="submit-search-btn">
-                İlanı Yayınla
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                data-testid="submit-search-btn"
+                disabled={submitting}
+              >
+                {submitting ? 'İlan oluşturuluyor...' : 'İlanı Yayınla'}
               </button>
             </form>
           </div>
