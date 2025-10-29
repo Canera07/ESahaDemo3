@@ -105,13 +105,18 @@
   cursor: pointer;
 }
 
-.discount-info {
-  background: #d4edda;
-  color: #155724;
+.platform-fee-info {
+  background: #E3F2FD;
   padding: 0.75rem 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
-  font-weight: 600;
+}
+
+.platform-fee-info p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #1565C0;
+  font-weight: 500;
 }
 
 .price-summary {
