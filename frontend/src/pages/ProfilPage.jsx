@@ -13,7 +13,6 @@ function ProfilPage() {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loyaltyStatus, setLoyaltyStatus] = useState(null);
 
   useEffect(() => {
     fetchData();
