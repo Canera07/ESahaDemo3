@@ -86,11 +86,6 @@ function OwnerPanel() {
     e.preventDefault();
 
     // Validate required fields
-    if (!fieldForm.tax_number || !fieldForm.iban) {
-      toast.error('Vergi numarası ve IBAN zorunludur');
-      return;
-    }
-
     if (!fieldForm.base_price_per_hour) {
       toast.error('Saat başı fiyat zorunludur');
       return;
