@@ -904,6 +904,18 @@ async def payment_success(merchant_oid: str):
     if not booking:
         return HTMLResponse("<h1>Rezervasyon bulunamadı</h1>", status_code=404)
     
+    # Get user to determine redirect
+    user = await db.users.find_one({"id": booking['user_id']}, {"_id": 0})
+    redirect_url = "/dashboard"
+    
+    if user:
+        if user['role'] == 'admin':
+            redirect_url = "/admin"
+        elif user['role'] == 'owner':
+            redirect_url = "/owner"
+        else:
+            redirect_url = "/dashboard"
+    
     return HTMLResponse(f"""
     <!DOCTYPE html>
     <html>
@@ -913,13 +925,19 @@ async def payment_success(merchant_oid: str):
             body {{ font-family: Arial, sans-serif; text-align: center; padding: 50px; }}
             .success {{ color: #2E7D32; }}
         </style>
+        <script>
+            setTimeout(function() {{
+                window.location.href = '{redirect_url}';
+            }}, 3000);
+        </script>
     </head>
     <body>
         <div class="success">
             <h1>✓ Ödeme Başarılı</h1>
             <p>Rezervasyonunuz onaylandı.</p>
             <p>Tutar: {booking['amount']} TL</p>
-            <a href="/">Ana Sayfaya Dön</a>
+            <p>3 saniye içinde yönlendirileceksiniz...</p>
+            <a href="{redirect_url}">Hemen Git</a>
         </div>
     </body>
     </html>
