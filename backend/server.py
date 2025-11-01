@@ -150,6 +150,30 @@ class Notification(BaseModel):
     read: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class AuditLog(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    admin_id: str
+    admin_email: str
+    action: str  # approve_field, reject_field, suspend_user, etc.
+    target_type: str  # field, user, booking, etc.
+    target_id: str
+    details: Dict[str, Any] = {}
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SupportTicket(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    user_email: str
+    user_name: str
+    subject: str
+    message: str
+    status: str = "open"  # open, in_progress, resolved, closed
+    admin_response: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ==================== REQUEST/RESPONSE MODELS ====================
 
 class RegisterRequest(BaseModel):
