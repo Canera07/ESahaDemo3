@@ -263,6 +263,20 @@ class OwnerProfileCreate(BaseModel):
     address: Optional[str] = None
     business_name: Optional[str] = None
 
+class SupportTicketCreate(BaseModel):
+    subject: str
+    message: str
+    priority: Optional[str] = "medium"
+
+class SupportMessageCreate(BaseModel):
+    body: str
+    attachments: Optional[List[str]] = []
+
+class SupportTicketUpdate(BaseModel):
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    assignee_user_id: Optional[str] = None
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
