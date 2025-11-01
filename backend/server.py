@@ -545,16 +545,18 @@ async def create_field(field: FieldCreate, user: Dict = Depends(get_current_user
         )
     
     # Validate required fields
-    if not field.tax_number or not field.iban:
-        raise HTTPException(status_code=400, detail="Vergi numarası ve IBAN zorunludur")
+    if not field.base_price_per_hour or field.base_price_per_hour <= 0:
+        raise HTTPException(status_code=400, detail="Geçerli bir saat başı fiyat giriniz")
     
-    # Validate tax_number format (basic check)
-    if len(field.tax_number.strip()) < 10:
-        raise HTTPException(status_code=400, detail="Geçersiz vergi numarası formatı")
+    # SECURITY: Get tax_number and IBAN from owner_profile (not from client)
+    tax_number = owner_profile.get('tax_number')
+    iban = owner_profile.get('iban')
     
-    # Validate IBAN format (basic check)
-    if not field.iban.strip().startswith('TR') or len(field.iban.strip()) < 20:
-        raise HTTPException(status_code=400, detail="Geçersiz IBAN formatı (TR ile başlamalı)")
+    if not tax_number or not iban:
+        raise HTTPException(
+            status_code=400, 
+            detail="Owner profilinizde vergi numarası veya IBAN eksik. Lütfen profilinizi güncelleyin."
+        )
     
     # SECURITY: Force owner_id to be the authenticated user
     new_field = FieldModel(
@@ -568,8 +570,8 @@ async def create_field(field: FieldCreate, user: Dict = Depends(get_current_user
         subscription_price_4_match=field.subscription_price_4_match,
         photos=field.photos,
         phone=field.phone,
-        tax_number=field.tax_number,
-        iban=field.iban,
+        tax_number=tax_number,  # From owner_profile
+        iban=iban,  # From owner_profile
         approved=False,
         tax_verified=False,
         subscription_prices_pending_review=True
