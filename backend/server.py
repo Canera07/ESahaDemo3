@@ -242,6 +242,13 @@ class TeamSearchCreate(BaseModel):
     intensity_level: str = "orta"
     message: str
 
+class OwnerProfileCreate(BaseModel):
+    tax_number: str
+    iban: str
+    phone: str
+    address: Optional[str] = None
+    business_name: Optional[str] = None
+
 # ==================== AUTH HELPERS ====================
 
 def hash_password(password: str) -> str:
