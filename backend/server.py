@@ -58,7 +58,9 @@ class User(BaseModel):
     name: str
     phone: Optional[str] = None
     role: str = "user"  # user, owner, admin
+    is_owner: bool = False  # Flag for owner profile completion
     altin_tac: int = 0
+    suspended: bool = False
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class FieldModel(BaseModel):
