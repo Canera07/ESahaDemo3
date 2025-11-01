@@ -17,6 +17,8 @@ function OwnerPanel() {
   const [showAddField, setShowAddField] = useState(false);
   const [selectedField, setSelectedField] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [hasProfile, setHasProfile] = useState(true);
+  const [checkingProfile, setCheckingProfile] = useState(true);
   const [fieldForm, setFieldForm] = useState({
     name: '',
     city: '',
