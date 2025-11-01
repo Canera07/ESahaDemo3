@@ -77,8 +77,8 @@ class FieldModel(BaseModel):
     photos: List[str] = []  # List of photo URLs
     cover_photo_url: Optional[str] = None  # Cover photo (first photo if not set)
     phone: str
-    tax_number: Optional[str] = None  # tax_id
-    iban: Optional[str] = None
+    tax_number: Optional[str] = None  # DEPRECATED - now in owner_profiles
+    iban: Optional[str] = None  # DEPRECATED - now in owner_profiles
     approved: bool = False
     tax_verified: bool = False
     subscription_prices_pending_review: bool = True
