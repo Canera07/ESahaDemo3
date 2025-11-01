@@ -1772,34 +1772,72 @@ async def create_default_admin():
     existing_admin = await db.users.find_one({"email": admin_email}, {"_id": 0})
     if existing_admin:
         logger.info("Default admin account already exists")
-        return
+    else:
+        # Create admin account
+        admin_user = User(
+            email=admin_email,
+            password=hash_password(admin_password),
+            name="E-Saha Admin",
+            role="admin"
+        )
+        
+        admin_dict = admin_user.model_dump()
+        admin_dict['created_at'] = admin_dict['created_at'].isoformat()
+        
+        await db.users.insert_one(admin_dict)
+        logger.info(f"Default admin account created: {admin_email}")
+        
+        # Create audit log for admin creation
+        log = AuditLog(
+            admin_id="system",
+            admin_email="system",
+            action="create_admin",
+            target_type="user",
+            target_id=admin_user.id,
+            details={"email": admin_email}
+        )
+        log_dict = log.model_dump()
+        log_dict['created_at'] = log_dict['created_at'].isoformat()
+        await db.audit_logs.insert_one(log_dict)
     
-    # Create admin account
-    admin_user = User(
-        email=admin_email,
-        password=hash_password(admin_password),
-        name="E-Saha Admin",
-        role="admin"
-    )
+    # Backfill: Create owner profiles for existing owners without profiles
+    owners_without_profiles = []
+    async for user in db.users.find({"role": "owner"}, {"_id": 0}):
+        profile_exists = await db.owner_profiles.find_one({"user_id": user['id']}, {"_id": 0})
+        if not profile_exists:
+            owners_without_profiles.append(user)
     
-    admin_dict = admin_user.model_dump()
-    admin_dict['created_at'] = admin_dict['created_at'].isoformat()
-    
-    await db.users.insert_one(admin_dict)
-    logger.info(f"Default admin account created: {admin_email}")
-    
-    # Create audit log for admin creation
-    log = AuditLog(
-        admin_id="system",
-        admin_email="system",
-        action="create_admin",
-        target_type="user",
-        target_id=admin_user.id,
-        details={"email": admin_email}
-    )
-    log_dict = log.model_dump()
-    log_dict['created_at'] = log_dict['created_at'].isoformat()
-    await db.audit_logs.insert_one(log_dict)
+    if owners_without_profiles:
+        logger.info(f"Found {len(owners_without_profiles)} owners without profiles. Creating default profiles...")
+        
+        for owner in owners_without_profiles:
+            # Create a basic profile for existing owners
+            # They can update it later
+            default_profile = OwnerProfile(
+                user_id=owner['id'],
+                tax_number="0000000000",  # Placeholder - user should update
+                iban="TR000000000000000000000000",  # Placeholder - user should update
+                phone=owner.get('phone', '0000000000'),
+                address="Lütfen adresinizi güncelleyin",
+                business_name=owner.get('name', 'Unknown'),
+                status="active"  # Set active so they can create fields
+            )
+            
+            profile_dict = default_profile.model_dump()
+            profile_dict['created_at'] = profile_dict['created_at'].isoformat()
+            profile_dict['updated_at'] = profile_dict['updated_at'].isoformat()
+            
+            await db.owner_profiles.insert_one(profile_dict)
+            
+            # Update user is_owner flag
+            await db.users.update_one(
+                {"id": owner['id']},
+                {"$set": {"is_owner": True}}
+            )
+            
+            logger.info(f"Created default owner profile for {owner['email']}")
+        
+        logger.info(f"Completed owner profile backfill for {len(owners_without_profiles)} users")
 
 # Include the router in the main app
 app.include_router(api_router)
