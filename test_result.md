@@ -375,8 +375,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Frontend testing (not done by testing agent)"
-  stuck_tasks: []
+    - "Owner panelinde saha ekleme 422 hatası"
+  stuck_tasks:
+    - "Owner panelinde fotoğraf yükleme"
   test_all: false
   test_priority: "high_first"
 
@@ -385,3 +386,5 @@ agent_communication:
     message: "Admin sistemi ve fotoğraf galerisi tamamlandı. Backend'de 11 yeni endpoint, frontend'de admin paneli, fotoğraf yönetimi ve galeri slider eklendi. Test edilmeye hazır."
   - agent: "testing"
     message: "✅ Backend testing tamamlandı. 18 test yapıldı, 17'si başarılı (%94.4 başarı oranı). Tüm admin endpoint'leri, fotoğraf yönetimi, erişim kontrolü ve güvenlik testleri başarılı. Sadece 1 minor issue: fotoğraf silindikten sonra 404 dönmesi (beklenen davranış). Tüm kritik fonksiyonlar çalışıyor."
+  - agent: "testing"
+    message: "✅ Frontend testing tamamlandı. 9 test senaryosu gerçekleştirildi. Admin paneli tam çalışıyor (giriş, dashboard, saha yönetimi, kullanıcı yönetimi, analitik, log kayıtları). Fotoğraf galerisi çalışıyor. Kayıt sayfasında admin engelleme doğru. ❌ Tek sorun: Owner panelinde saha ekleme 422 hatası (backend validation sorunu). Bu sorun çözülmeli."
