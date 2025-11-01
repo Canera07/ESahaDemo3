@@ -114,3 +114,148 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Photo Management Styles */
+.field-status {
+  font-weight: 600;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+}
+
+.status-approved {
+  color: #2E7D32;
+  background: #E8F5E9;
+}
+
+.status-pending {
+  color: #ED6C02;
+  background: #FFF4E5;
+}
+
+.photo-manager {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid #E0E0E0;
+}
+
+.photo-manager h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #2E7D32;
+}
+
+.photo-upload {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  padding: 1rem;
+  background: #F5F5F5;
+  border-radius: 8px;
+}
+
+.upload-button {
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.upload-button:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+}
+
+.upload-button.disabled {
+  background: #BDBDBD;
+  cursor: not-allowed;
+}
+
+.upload-info {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.photo-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+
+.photo-item:hover {
+  transform: scale(1.05);
+}
+
+.photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  gap: 5px;
+  padding: 8px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+}
+
+.cover-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #FFD700;
+  color: #000;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.btn-icon {
+  background: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.btn-icon:hover {
+  transform: scale(1.1);
+}
+
+.btn-icon.btn-danger {
+  background: #EF5350;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .photo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}
+
