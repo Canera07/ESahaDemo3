@@ -114,135 +114,168 @@ user_problem_statement: |
 backend:
   - task: "Varsayılan admin hesabı oluşturma"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Startup event ile cnrakbb070@hotmail.com / Canerak07 admin hesabı oluşturuldu"
+      - working: true
+        agent: "testing"
+        comment: "✅ Admin hesabı başarıyla test edildi. cnrakbb070@hotmail.com / Canerak07 ile giriş yapılabildi ve admin rolü doğrulandı."
 
   - task: "Admin yetkilendirme sistemi"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "get_admin_user middleware eklendi, admin-only endpoint'ler oluşturuldu"
+      - working: true
+        agent: "testing"
+        comment: "✅ Admin yetkilendirme sistemi çalışıyor. Admin olmayan kullanıcılar admin endpoint'lerine erişemiyor (403 Forbidden)."
 
   - task: "Fotoğraf upload endpoint'leri"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "POST /api/fields/{field_id}/photos - fotoğraf yükleme (maks 10, 5MB limit)"
+      - working: true
+        agent: "testing"
+        comment: "✅ Fotoğraf yükleme sistemi çalışıyor. Owner rolündeki kullanıcılar sahalarına fotoğraf yükleyebiliyor. 5MB ve 10 fotoğraf limiti kontrol ediliyor."
 
   - task: "Fotoğraf yönetim endpoint'leri"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "DELETE /api/fields/{field_id}/photos ve PUT /api/fields/{field_id}/cover-photo eklendi"
+      - working: true
+        agent: "testing"
+        comment: "✅ Fotoğraf yönetim endpoint'leri çalışıyor. Kapak fotoğrafı belirleme ve fotoğraf silme işlemleri başarılı."
 
   - task: "Admin dashboard endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "GET /api/admin/dashboard - istatistikler, gelir raporları"
+      - working: true
+        agent: "testing"
+        comment: "✅ Admin dashboard endpoint'i çalışıyor. İstatistikler, gelir bilgileri ve son aktiviteler doğru şekilde döndürülüyor."
 
   - task: "Admin saha yönetimi"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "GET /api/admin/fields, POST /api/admin/fields/{id}/approve, POST /api/admin/fields/{id}/reject"
+      - working: true
+        agent: "testing"
+        comment: "✅ Admin saha yönetimi endpoint'leri çalışıyor. Saha listesi, bekleyen sahalar, onaylama ve reddetme işlemleri test edildi."
 
   - task: "Admin kullanıcı yönetimi"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "GET /api/admin/users, POST /api/admin/users/{id}/suspend, DELETE /api/admin/users/{id}"
+      - working: true
+        agent: "testing"
+        comment: "✅ Admin kullanıcı yönetimi çalışıyor. Kullanıcı listesi, role göre filtreleme, askıya alma ve aktif hale getirme işlemleri test edildi."
 
   - task: "Admin analitik ve raporlama"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "GET /api/admin/analytics - aylık gelir, top sahalar, rezervasyon istatistikleri"
+      - working: true
+        agent: "testing"
+        comment: "✅ Admin analitik endpoint'i çalışıyor. Aylık gelir, top sahalar ve rezervasyon istatistikleri doğru şekilde döndürülüyor."
 
   - task: "Audit log sistemi"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "AuditLog modeli ve GET /api/admin/audit-logs endpoint'i, tüm admin işlemleri kaydediliyor"
+      - working: true
+        agent: "testing"
+        comment: "✅ Audit log sistemi çalışıyor. Admin işlemleri kaydediliyor ve log endpoint'i doğru şekilde çalışıyor."
 
   - task: "Destek talepleri"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "POST /api/support/ticket ve GET /api/admin/support-tickets eklendi"
+      - working: true
+        agent: "testing"
+        comment: "✅ Destek talep sistemi endpoint'leri mevcut ve erişilebilir durumda."
 
   - task: "Admin kayıt engelleme"
     implemented: true
-    working: "NA"
+    working: true
     file: "backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Register endpoint'inde admin rolü engellenmiş"
+      - working: true
+        agent: "testing"
+        comment: "✅ Admin kayıt engelleme çalışıyor. Public register endpoint'i üzerinden admin rolü ile kayıt yapılamıyor (403 Forbidden)."
 
 frontend:
   - task: "Admin paneli sayfası"
