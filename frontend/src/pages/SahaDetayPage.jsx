@@ -383,6 +383,38 @@ function SahaDetayPage() {
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Gallery Modal */}
+      {showFullscreen && (
+        <div className="fullscreen-gallery" onClick={() => setShowFullscreen(false)}>
+          <button className="fullscreen-close" onClick={() => setShowFullscreen(false)}>
+            ✕
+          </button>
+          <div className="fullscreen-content" onClick={(e) => e.stopPropagation()}>
+            <img 
+              src={`${BACKEND_URL}${photos[currentPhotoIndex]}`}
+              alt={`${field.name} - ${currentPhotoIndex + 1}`}
+              className="fullscreen-image"
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/1200x800?text=Saha+Fotoğrafı';
+              }}
+            />
+            {photos.length > 1 && (
+              <>
+                <button className="fullscreen-nav fullscreen-nav-prev" onClick={(e) => {e.stopPropagation(); prevPhoto();}}>
+                  &#8249;
+                </button>
+                <button className="fullscreen-nav fullscreen-nav-next" onClick={(e) => {e.stopPropagation(); nextPhoto();}}>
+                  &#8250;
+                </button>
+                <div className="fullscreen-counter">
+                  {currentPhotoIndex + 1} / {photos.length}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
