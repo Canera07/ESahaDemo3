@@ -268,6 +268,28 @@ async def get_current_user(request: Request) -> Dict:
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+async def get_admin_user(request: Request) -> Dict:
+    """Admin-only authentication"""
+    user = await get_current_user(request)
+    if user['role'] != 'admin':
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+async def create_audit_log(admin_id: str, admin_email: str, action: str, target_type: str, target_id: str, details: Dict = None):
+    """Create audit log entry"""
+    log = AuditLog(
+        admin_id=admin_id,
+        admin_email=admin_email,
+        action=action,
+        target_type=target_type,
+        target_id=target_id,
+        details=details or {}
+    )
+    log_dict = log.model_dump()
+    log_dict['created_at'] = log_dict['created_at'].isoformat()
+    await db.audit_logs.insert_one(log_dict)
+    logger.info(f"Audit log: {action} by {admin_email} on {target_type}:{target_id}")
+
 # ==================== AUTH ROUTES ====================
 
 @api_router.post("/auth/register")
