@@ -1787,19 +1787,34 @@ async def admin_get_support_tickets(admin: Dict = Depends(get_admin_user)):
     tickets = await db.support_tickets.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return {"tickets": tickets}
 
-@api_router.post("/support/ticket")
+# ==================== SUPPORT SYSTEM ROUTES ====================
+
+@api_router.post("/support/tickets")
 async def create_support_ticket(
-    subject: str,
-    message: str,
+    ticket_data: SupportTicketCreate,
     user: Dict = Depends(get_current_user)
 ):
     """Create a support ticket"""
+    # Validation
+    if not ticket_data.subject or not ticket_data.message:
+        raise HTTPException(status_code=400, detail="Konu ve mesaj zorunludur")
+    
+    if len(ticket_data.subject) < 5:
+        raise HTTPException(status_code=400, detail="Konu en az 5 karakter olmalıdır")
+    
+    if len(ticket_data.message) < 10:
+        raise HTTPException(status_code=400, detail="Mesaj en az 10 karakter olmalıdır")
+    
+    # Create ticket
     ticket = SupportTicket(
-        user_id=user['id'],
-        user_email=user['email'],
-        user_name=user['name'],
-        subject=subject,
-        message=message
+        requester_user_id=user['id'],
+        requester_email=user['email'],
+        requester_name=user['name'],
+        role=user['role'],
+        subject=ticket_data.subject,
+        message=ticket_data.message,
+        priority=ticket_data.priority or "medium",
+        status="open"
     )
     
     ticket_dict = ticket.model_dump()
@@ -1808,7 +1823,168 @@ async def create_support_ticket(
     
     await db.support_tickets.insert_one(ticket_dict)
     
-    return {"status": "success", "message": "Destek talebiniz oluşturuldu", "ticket_id": ticket.id}
+    # Create audit log
+    await create_audit_log(
+        admin_id=user['id'],
+        admin_email=user['email'],
+        action="create_support_ticket",
+        target_type="support_ticket",
+        target_id=ticket.id,
+        details={"subject": ticket_data.subject, "priority": ticket_data.priority}
+    )
+    
+    logger.info(f"Support ticket created: {ticket.id} by {user['email']}")
+    
+    return {
+        "status": "success",
+        "message": "Destek talebiniz oluşturuldu. En kısa sürede yanıt vereceğiz.",
+        "ticket": {
+            "id": ticket.id,
+            "subject": ticket.subject,
+            "status": ticket.status,
+            "created_at": ticket_dict['created_at']
+        }
+    }
+
+@api_router.get("/support/tickets/mine")
+async def get_my_tickets(user: Dict = Depends(get_current_user)):
+    """Get user's own support tickets"""
+    tickets = await db.support_tickets.find(
+        {"requester_user_id": user['id']},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    return {"status": "success", "tickets": tickets}
+
+@api_router.get("/support/tickets/{ticket_id}")
+async def get_ticket_detail(ticket_id: str, user: Dict = Depends(get_current_user)):
+    """Get ticket detail with messages"""
+    # Get ticket
+    ticket = await db.support_tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Destek talebi bulunamadı")
+    
+    # Check permission
+    if user['role'] not in ['admin', 'support'] and ticket['requester_user_id'] != user['id']:
+        raise HTTPException(status_code=403, detail="Bu destek talebini görüntüleme yetkiniz yok")
+    
+    # Get messages
+    messages = await db.support_messages.find(
+        {"ticket_id": ticket_id},
+        {"_id": 0}
+    ).sort("created_at", 1).to_list(1000)
+    
+    return {
+        "status": "success",
+        "ticket": ticket,
+        "messages": messages
+    }
+
+@api_router.post("/support/tickets/{ticket_id}/messages")
+async def send_message(
+    ticket_id: str,
+    message_data: SupportMessageCreate,
+    user: Dict = Depends(get_current_user)
+):
+    """Send a message in support ticket"""
+    # Get ticket
+    ticket = await db.support_tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Destek talebi bulunamadı")
+    
+    # Check permission
+    if user['role'] not in ['admin', 'support'] and ticket['requester_user_id'] != user['id']:
+        raise HTTPException(status_code=403, detail="Bu destek talebine mesaj gönderme yetkiniz yok")
+    
+    # Validate message
+    if not message_data.body or len(message_data.body) < 1:
+        raise HTTPException(status_code=400, detail="Mesaj boş olamaz")
+    
+    # Create message
+    message = SupportMessage(
+        ticket_id=ticket_id,
+        sender_user_id=user['id'],
+        sender_name=user['name'],
+        sender_role=user['role'],
+        body=message_data.body,
+        attachments=message_data.attachments or []
+    )
+    
+    message_dict = message.model_dump()
+    message_dict['created_at'] = message_dict['created_at'].isoformat()
+    
+    await db.support_messages.insert_one(message_dict)
+    
+    # Update ticket status
+    if user['role'] in ['admin', 'support']:
+        await db.support_tickets.update_one(
+            {"id": ticket_id},
+            {"$set": {
+                "status": "in_progress",
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+    
+    # Create audit log
+    await create_audit_log(
+        admin_id=user['id'],
+        admin_email=user['email'],
+        action="send_support_message",
+        target_type="support_ticket",
+        target_id=ticket_id,
+        details={"sender_role": user['role']}
+    )
+    
+    logger.info(f"Support message sent to ticket {ticket_id} by {user['email']}")
+    
+    return {
+        "status": "success",
+        "message": "Mesajınız gönderildi",
+        "data": message_dict
+    }
+
+@api_router.patch("/support/tickets/{ticket_id}")
+async def update_ticket_status(
+    ticket_id: str,
+    update_data: SupportTicketUpdate,
+    admin: Dict = Depends(get_admin_user)
+):
+    """Update ticket status (admin only)"""
+    # Get ticket
+    ticket = await db.support_tickets.find_one({"id": ticket_id}, {"_id": 0})
+    
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Destek talebi bulunamadı")
+    
+    # Prepare update
+    updates = {}
+    if update_data.status:
+        updates["status"] = update_data.status
+    if update_data.priority:
+        updates["priority"] = update_data.priority
+    if update_data.assignee_user_id:
+        updates["assignee_user_id"] = update_data.assignee_user_id
+    
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    # Update ticket
+    await db.support_tickets.update_one({"id": ticket_id}, {"$set": updates})
+    
+    # Create audit log
+    await create_audit_log(
+        admin_id=admin['id'],
+        admin_email=admin['email'],
+        action="update_support_ticket",
+        target_type="support_ticket",
+        target_id=ticket_id,
+        details=updates
+    )
+    
+    logger.info(f"Support ticket {ticket_id} updated by admin {admin['email']}")
+    
+    return {"status": "success", "message": "Destek talebi güncellendi"}
 
 # ==================== STARTUP EVENT ====================
 
