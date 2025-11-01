@@ -15,7 +15,14 @@ function AuthPage() {
     password: '',
     name: '',
     phone: '',
-    role: 'user'
+    role: 'user',
+    // Owner-specific fields
+    tax_number: '',
+    iban: '',
+    business_name: '',
+    city: '',
+    district: '',
+    address: ''
   });
   const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
