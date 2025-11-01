@@ -346,10 +346,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Admin giriş ve panel erişimi"
-    - "Fotoğraf yükleme ve yönetimi"
-    - "Admin onaylama işlemleri"
-    - "Saha detay sayfasında galeri"
+    - "Frontend testing (not done by testing agent)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -357,3 +354,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Admin sistemi ve fotoğraf galerisi tamamlandı. Backend'de 11 yeni endpoint, frontend'de admin paneli, fotoğraf yönetimi ve galeri slider eklendi. Test edilmeye hazır."
+  - agent: "testing"
+    message: "✅ Backend testing tamamlandı. 18 test yapıldı, 17'si başarılı (%94.4 başarı oranı). Tüm admin endpoint'leri, fotoğraf yönetimi, erişim kontrolü ve güvenlik testleri başarılı. Sadece 1 minor issue: fotoğraf silindikten sonra 404 dönmesi (beklenen davranış). Tüm kritik fonksiyonlar çalışıyor."
