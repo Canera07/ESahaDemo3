@@ -104,6 +104,7 @@ function App() {
             <Route path="/saha/:id" element={user ? <SahaDetayPage /> : <Navigate to="/auth" />} />
             <Route path="/profil" element={user ? <ProfilPage /> : <Navigate to="/auth" />} />
             <Route path="/takim-arama" element={user ? <TakimAramaPage /> : <Navigate to="/auth" />} />
+            <Route path="/owner/profile-setup" element={user && user.role === 'owner' ? <OwnerProfileSetup /> : <Navigate to="/dashboard" />} />
             <Route path="/owner" element={user && user.role === 'owner' ? <OwnerPanel /> : <Navigate to="/dashboard" />} />
             <Route path="/admin" element={user && user.role === 'admin' ? <AdminPanel /> : <Navigate to="/dashboard" />} />
           </Routes>
