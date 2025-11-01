@@ -188,6 +188,22 @@ function SahaDetayPage() {
 
   const priceInfo = calculatePrice();
 
+  const photos = field?.photos && field.photos.length > 0 
+    ? field.photos 
+    : ['https://via.placeholder.com/800x600?text=Saha+Fotoğrafı+Yok'];
+
+  const nextPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
+  };
+
+  const prevPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+  };
+
+  const goToPhoto = (index) => {
+    setCurrentPhotoIndex(index);
+  };
+
   return (
     <div className="saha-detay-page">
       <nav className="navbar">
@@ -209,19 +225,47 @@ function SahaDetayPage() {
 
         <div className="saha-detail-grid">
           <div className="saha-info-section">
+            {/* Photo Gallery/Slider */}
+            <div className="photo-gallery">
+              <div className="gallery-main">
+                <img 
+                  src={`${BACKEND_URL}${photos[currentPhotoIndex]}`} 
+                  alt={`${field.name} - ${currentPhotoIndex + 1}`}
+                  className="gallery-image"
+                  onClick={() => setShowFullscreen(true)}
+                  onError={(e) => {
+                    e.target.src = 'https://via.placeholder.com/800x600?text=Saha+Fotoğrafı';
+                  }}
+                />
+                
+                {photos.length > 1 && (
+                  <>
+                    <button className="gallery-nav gallery-nav-prev" onClick={prevPhoto}>
+                      &#8249;
+                    </button>
+                    <button className="gallery-nav gallery-nav-next" onClick={nextPhoto}>
+                      &#8250;
+                    </button>
+                    
+                    <div className="gallery-indicators">
+                      {photos.map((_, idx) => (
+                        <button
+                          key={idx}
+                          className={`indicator ${idx === currentPhotoIndex ? 'active' : ''}`}
+                          onClick={() => goToPhoto(idx)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
             {/* Weekly Calendar */}
             <WeeklyCalendar 
               fieldId={id}
               onSlotSelect={handleCalendarSlotSelect}
             />
-
-            <div className="saha-images">
-              {field.photos && field.photos.length > 0 ? (
-                <img src={field.photos[0]} alt={field.name} className="main-image" />
-              ) : (
-                <div className="image-placeholder">🏟️</div>
-              )}
-            </div>
 
             <h1 className="saha-title" data-testid="saha-title">{field.name}</h1>
             <p className="saha-location">📍 {field.city} - {field.address}</p>
