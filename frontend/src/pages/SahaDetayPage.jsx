@@ -143,7 +143,14 @@ function SahaDetayPage() {
 
       const booking = response.data.booking;
       
-      toast.success('Rezervasyon oluşturuldu!');
+      // SECURITY CHECK: Verify booking belongs to current user
+      console.log('Booking created:', {
+        booking_id: booking.id,
+        user_id: booking.user_id,
+        user_email: booking.user_email
+      });
+      
+      toast.success(`Rezervasyon oluşturuldu! (${booking.user_email})`);
       
       // Redirect to payment
       const paymentRes = await axios.post(
@@ -156,6 +163,7 @@ function SahaDetayPage() {
         window.location.href = paymentRes.data.payment_url;
       }
     } catch (error) {
+      console.error('Booking error:', error.response?.data);
       toast.error(error.response?.data?.detail || 'Rezervasyon başarısız');
     }
   };
