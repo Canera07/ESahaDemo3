@@ -1184,6 +1184,108 @@ async def mark_notification_read(notif_id: str, user: Dict = Depends(get_current
     )
     return {"status": "success"}
 
+# ==================== OWNER PROFILE ROUTES ====================
+
+@api_router.post("/owner/profile")
+async def create_owner_profile(profile: OwnerProfileCreate, user: Dict = Depends(get_current_user)):
+    """Create or update owner profile"""
+    # Check if user has owner role
+    if user['role'] != 'owner':
+        raise HTTPException(status_code=403, detail="Sadece owner hesapları profil oluşturabilir")
+    
+    # Check if profile already exists
+    existing_profile = await db.owner_profiles.find_one({"user_id": user['id']}, {"_id": 0})
+    
+    if existing_profile:
+        # Update existing profile
+        update_data = profile.model_dump()
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+        
+        await db.owner_profiles.update_one(
+            {"user_id": user['id']},
+            {"$set": update_data}
+        )
+        
+        # Update user is_owner flag
+        await db.users.update_one(
+            {"id": user['id']},
+            {"$set": {"is_owner": True}}
+        )
+        
+        logger.info(f"Owner profile updated for user {user['id']}")
+        return {"status": "success", "message": "Owner profili güncellendi", "action": "updated"}
+    else:
+        # Create new profile
+        new_profile = OwnerProfile(
+            user_id=user['id'],
+            tax_number=profile.tax_number,
+            iban=profile.iban,
+            phone=profile.phone,
+            address=profile.address,
+            business_name=profile.business_name,
+            status="active"
+        )
+        
+        profile_dict = new_profile.model_dump()
+        profile_dict['created_at'] = profile_dict['created_at'].isoformat()
+        profile_dict['updated_at'] = profile_dict['updated_at'].isoformat()
+        
+        await db.owner_profiles.insert_one(profile_dict)
+        
+        # Update user is_owner flag
+        await db.users.update_one(
+            {"id": user['id']},
+            {"$set": {"is_owner": True}}
+        )
+        
+        logger.info(f"Owner profile created for user {user['id']}")
+        return {"status": "success", "message": "Owner profili oluşturuldu. Artık saha ekleyebilirsiniz!", "action": "created"}
+
+@api_router.get("/owner/profile")
+async def get_owner_profile(user: Dict = Depends(get_current_user)):
+    """Get owner profile"""
+    if user['role'] != 'owner':
+        raise HTTPException(status_code=403, detail="Sadece owner hesapları bu bilgiye erişebilir")
+    
+    profile = await db.owner_profiles.find_one({"user_id": user['id']}, {"_id": 0})
+    
+    if not profile:
+        return {
+            "status": "not_found",
+            "has_profile": False,
+            "message": "Owner profili bulunamadı. Lütfen profil bilgilerinizi girin."
+        }
+    
+    return {
+        "status": "success",
+        "has_profile": True,
+        "profile": profile
+    }
+
+@api_router.get("/debug/me")
+async def debug_user_info(user: Dict = Depends(get_current_user)):
+    """Debug endpoint to check user info and owner profile status"""
+    owner_profile = None
+    has_owner_profile = False
+    owner_status = None
+    
+    if user['role'] == 'owner':
+        owner_profile = await db.owner_profiles.find_one({"user_id": user['id']}, {"_id": 0})
+        has_owner_profile = owner_profile is not None
+        owner_status = owner_profile.get('status') if owner_profile else None
+    
+    return {
+        "user_id": user['id'],
+        "email": user['email'],
+        "name": user['name'],
+        "role": user['role'],
+        "is_owner": user.get('is_owner', False),
+        "has_owner_profile": has_owner_profile,
+        "owner_status": owner_status,
+        "can_create_fields": user['role'] == 'owner' and has_owner_profile and owner_status in ['active', 'verified'],
+        "suspended": user.get('suspended', False)
+    }
+
 # ==================== LOYALTY ROUTES (DISABLED) ====================
 # Loyalty system has been removed as per business requirement
 
