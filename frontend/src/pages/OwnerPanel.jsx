@@ -358,37 +358,10 @@ function OwnerPanel() {
                 </div>
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Vergi Numarası *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={fieldForm.tax_number}
-                    onChange={(e) => setFieldForm({ ...fieldForm, tax_number: e.target.value })}
-                    required
-                    placeholder="10 haneli vergi numarası"
-                    data-testid="field-tax-input"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">IBAN *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={fieldForm.iban}
-                    onChange={(e) => setFieldForm({ ...fieldForm, iban: e.target.value })}
-                    required
-                    placeholder="TR XX XXXX XXXX XXXX XXXX XXXX XX"
-                    data-testid="field-iban-input"
-                  />
-                </div>
-              </div>
-
               <div className="form-info">
                 <p>* ile işaretli alanlar zorunludur</p>
                 <p>Sahanız admin onayından sonra yayınlanacaktır.</p>
+                <p><small>Not: Vergi numarası ve IBAN bilgileri owner profil bilgilerinizden alınmaktadır.</small></p>
               </div>
 
               <button type="submit" className="btn btn-primary" data-testid="submit-field-btn">
