@@ -622,6 +622,14 @@ async def get_field_calendar(field_id: str):
 
 @api_router.post("/bookings")
 async def create_booking(booking: BookingCreate, user: Dict = Depends(get_current_user)):
+    # SECURITY: Prevent admin from making bookings
+    if user['role'] == 'admin':
+        raise HTTPException(status_code=403, detail="Admin hesabı ile rezervasyon yapılamaz")
+    
+    # SECURITY: Check if user is suspended
+    if user.get('suspended', False):
+        raise HTTPException(status_code=403, detail="Hesabınız askıya alınmış")
+    
     # Get field
     field = await db.fields.find_one({"id": booking.field_id}, {"_id": 0})
     if not field:
@@ -671,9 +679,10 @@ async def create_booking(booking: BookingCreate, user: Dict = Depends(get_curren
         owner_share_amount = base_price
         matches_remaining = 1
     
-    # Create booking
+    # SECURITY: Force user_id to be the authenticated user (no client override)
+    # Create booking with ENFORCED user_id
     new_booking = Booking(
-        user_id=user['id'],
+        user_id=user['id'],  # ENFORCED - always use authenticated user
         field_id=booking.field_id,
         start_datetime=booking.start_datetime,
         end_datetime=booking.end_datetime,
@@ -693,9 +702,23 @@ async def create_booking(booking: BookingCreate, user: Dict = Depends(get_curren
     
     await db.bookings.insert_one(booking_dict)
     
-    # Update availability - mark slot as unavailable
-    # Note: We'll need to add an availabilities collection for this
-    # For now, the booking existence itself marks the slot as unavailable
+    # Create audit log for booking
+    await create_audit_log(
+        admin_id=user['id'],
+        admin_email=user['email'],
+        action="create_booking",
+        target_type="booking",
+        target_id=booking_dict['id'],
+        details={
+            "field_id": booking.field_id,
+            "date": date_str,
+            "time": time_str,
+            "amount": total_amount_user_paid,
+            "user_role": user['role']
+        }
+    )
+    
+    logger.info(f"Booking created: {booking_dict['id']} by user {user['id']} ({user['email']}) - role: {user['role']}")
     
     # Return clean booking data without _id
     return {"status": "success", "booking": {
@@ -706,7 +729,9 @@ async def create_booking(booking: BookingCreate, user: Dict = Depends(get_curren
         "status": booking_dict['status'],
         "total_amount_user_paid": booking_dict['total_amount_user_paid'],
         "owner_share_amount": booking_dict['owner_share_amount'],
-        "platform_fee_amount": booking_dict['platform_fee_amount']
+        "platform_fee_amount": booking_dict['platform_fee_amount'],
+        "user_id": booking_dict['user_id'],  # Include for verification
+        "user_email": user['email']  # Include for verification
     }}
 
 @api_router.get("/bookings")
