@@ -211,6 +211,13 @@ class RegisterRequest(BaseModel):
     name: str
     phone: Optional[str] = None
     role: str = "user"
+    # Owner-specific fields (required if role=owner)
+    tax_number: Optional[str] = None
+    iban: Optional[str] = None
+    business_name: Optional[str] = None
+    city: Optional[str] = None
+    district: Optional[str] = None
+    address: Optional[str] = None
 
 class LoginRequest(BaseModel):
     email: EmailStr
