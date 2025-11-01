@@ -245,6 +245,7 @@ def create_jwt_token(user_id: str, email: str, role: str) -> str:
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 async def get_current_user(request: Request) -> Dict:
+    """Get authenticated user - NO ADMIN FALLBACK"""
     # Check cookie first
     session_token = request.cookies.get('session_token')
     
@@ -254,18 +255,30 @@ async def get_current_user(request: Request) -> Dict:
         if auth_header and auth_header.startswith('Bearer '):
             session_token = auth_header.split(' ')[1]
     
+    # NO TOKEN = NO ACCESS (no admin fallback)
     if not session_token:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     try:
         payload = jwt.decode(session_token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
         user = await db.users.find_one({"id": payload['user_id']}, {"_id": 0})
+        
+        # User must exist in database
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
+        
+        # Check if user is suspended
+        if user.get('suspended', False):
+            raise HTTPException(status_code=403, detail="Account suspended")
+        
+        # SECURITY: Log authentication details
+        logger.debug(f"Authenticated user: {user['id']} ({user['email']}) - role: {user['role']}")
+        
         return user
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
         raise HTTPException(status_code=401, detail="Invalid token")
 
 async def get_admin_user(request: Request) -> Dict:
