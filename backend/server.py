@@ -174,6 +174,19 @@ class SupportTicket(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class OwnerProfile(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str  # Unique reference to user
+    tax_number: str
+    iban: str
+    phone: str
+    address: Optional[str] = None
+    business_name: Optional[str] = None
+    status: str = "active"  # pending, active, verified, suspended
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # ==================== REQUEST/RESPONSE MODELS ====================
 
 class RegisterRequest(BaseModel):
