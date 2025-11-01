@@ -14,6 +14,7 @@ import SahaDetayPage from "./pages/SahaDetayPage";
 import ProfilPage from "./pages/ProfilPage";
 import TakimAramaPage from "./pages/TakimAramaPage";
 import OwnerPanel from "./pages/OwnerPanel";
+import AdminPanel from "./pages/AdminPanel";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
