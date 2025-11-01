@@ -368,6 +368,32 @@ async def register(req: RegisterRequest):
     if req.role == "admin":
         raise HTTPException(status_code=403, detail="Admin hesapları sadece sistem yöneticileri tarafından oluşturulabilir")
     
+    # Owner-specific validation
+    if req.role == "owner":
+        # Validate tax_number
+        if not req.tax_number or len(req.tax_number.strip()) < 10:
+            raise HTTPException(status_code=400, detail="Vergi Numarası zorunludur (TCKN 11 / VKN 10 hane)")
+        
+        if not req.tax_number.strip().isdigit():
+            raise HTTPException(status_code=400, detail="Geçersiz vergi numarası (sadece rakam)")
+        
+        tax_len = len(req.tax_number.strip())
+        if tax_len not in [10, 11]:
+            raise HTTPException(status_code=400, detail="Geçersiz vergi numarası (TCKN 11 / VKN 10 hane)")
+        
+        # Check if tax_number already exists
+        existing_tax = await db.owner_profiles.find_one({"tax_number": req.tax_number}, {"_id": 0})
+        if existing_tax:
+            raise HTTPException(status_code=400, detail="Bu vergi numarası başka bir işletmeye kayıtlı")
+        
+        # Validate IBAN
+        if not req.iban or not req.iban.strip().startswith('TR') or len(req.iban.strip()) < 20:
+            raise HTTPException(status_code=400, detail="IBAN zorunludur (TR ile başlamalı)")
+        
+        # Validate phone
+        if not req.phone or len(req.phone.strip()) < 10:
+            raise HTTPException(status_code=400, detail="Telefon zorunludur")
+    
     # Check if user exists
     existing = await db.users.find_one({"email": req.email}, {"_id": 0})
     if existing:
@@ -378,13 +404,33 @@ async def register(req: RegisterRequest):
         password=hash_password(req.password),
         name=req.name,
         phone=req.phone,
-        role=req.role
+        role=req.role,
+        is_owner=(req.role == "owner")
     )
     
     user_dict = user.model_dump()
     user_dict['created_at'] = user_dict['created_at'].isoformat()
     
     await db.users.insert_one(user_dict)
+    
+    # Create owner profile if role is owner
+    if req.role == "owner":
+        owner_profile = OwnerProfile(
+            user_id=user.id,
+            tax_number=req.tax_number,
+            iban=req.iban,
+            phone=req.phone,
+            business_name=req.business_name or req.name,
+            address=req.address or "",
+            status="active"
+        )
+        
+        profile_dict = owner_profile.model_dump()
+        profile_dict['created_at'] = profile_dict['created_at'].isoformat()
+        profile_dict['updated_at'] = profile_dict['updated_at'].isoformat()
+        
+        await db.owner_profiles.insert_one(profile_dict)
+        logger.info(f"Owner profile created during registration for {user.email}")
     
     token = create_jwt_token(user.id, user.email, user.role)
     
@@ -395,7 +441,8 @@ async def register(req: RegisterRequest):
             "id": user.id,
             "email": user.email,
             "name": user.name,
-            "role": user.role
+            "role": user.role,
+            "is_owner": user.is_owner
         }
     }
 
