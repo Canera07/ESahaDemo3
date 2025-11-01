@@ -1221,6 +1221,26 @@ async def create_owner_profile(profile: OwnerProfileCreate, user: Dict = Depends
     if user['role'] != 'owner':
         raise HTTPException(status_code=403, detail="Sadece owner hesapları profil oluşturabilir")
     
+    # Validate tax_number
+    if not profile.tax_number or len(profile.tax_number.strip()) < 10:
+        raise HTTPException(status_code=400, detail="Vergi Numarası zorunludur (10-11 hane)")
+    
+    if not profile.tax_number.strip().isdigit():
+        raise HTTPException(status_code=400, detail="Vergi Numarası sadece rakam içermelidir")
+    
+    # Check if tax_number is unique (except for current user)
+    existing_tax = await db.owner_profiles.find_one({
+        "tax_number": profile.tax_number,
+        "user_id": {"$ne": user['id']}
+    }, {"_id": 0})
+    
+    if existing_tax:
+        raise HTTPException(status_code=400, detail="Bu vergi numarası başka bir işletmeye kayıtlı")
+    
+    # Validate IBAN
+    if not profile.iban or not profile.iban.strip().startswith('TR') or len(profile.iban.strip()) < 20:
+        raise HTTPException(status_code=400, detail="Geçersiz IBAN formatı (TR ile başlamalı)")
+    
     # Check if profile already exists
     existing_profile = await db.owner_profiles.find_one({"user_id": user['id']}, {"_id": 0})
     
