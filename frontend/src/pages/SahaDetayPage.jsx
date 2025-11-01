@@ -18,6 +18,8 @@ function SahaDetayPage() {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [showFullscreen, setShowFullscreen] = useState(false);
   const [bookingData, setBookingData] = useState({
     date: '',
     time: '',
