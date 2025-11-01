@@ -103,6 +103,69 @@ function AuthPage() {
                     <option value="owner">Saha Sahibi</option>
                   </select>
                 </div>
+
+                {/* Owner-specific fields */}
+                {formData.role === 'owner' && (
+                  <>
+                    <div className="owner-notice">
+                      <strong>ℹ️ Saha Sahibi Bilgileri</strong>
+                      <p>Saha ekleyebilmek için aşağıdaki bilgileri doldurun</p>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Vergi Numarası (TCKN/VKN) *</label>
+                      <input
+                        type="text"
+                        name="tax_number"
+                        className="form-input"
+                        value={formData.tax_number}
+                        onChange={handleChange}
+                        required={formData.role === 'owner'}
+                        placeholder="10 veya 11 haneli numara"
+                        maxLength={11}
+                      />
+                      <small className="form-hint">TCKN: 11 hane, VKN: 10 hane</small>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">IBAN *</label>
+                      <input
+                        type="text"
+                        name="iban"
+                        className="form-input"
+                        value={formData.iban}
+                        onChange={handleChange}
+                        required={formData.role === 'owner'}
+                        placeholder="TR XX XXXX XXXX XXXX XXXX XXXX XX"
+                      />
+                      <small className="form-hint">TR ile başlamalı</small>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">İşletme Adı</label>
+                      <input
+                        type="text"
+                        name="business_name"
+                        className="form-input"
+                        value={formData.business_name}
+                        onChange={handleChange}
+                        placeholder="Örn: Yeşil Halısaha Spor Kompleksi"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Adres</label>
+                      <textarea
+                        name="address"
+                        className="form-textarea"
+                        value={formData.address}
+                        onChange={handleChange}
+                        placeholder="İşletme adresiniz"
+                        rows={2}
+                      />
+                    </div>
+                  </>
+                )}
               </>
             )}
 
