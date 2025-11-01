@@ -570,10 +570,14 @@ class ESahaBackendTester:
 
 if __name__ == "__main__":
     tester = ESahaBackendTester()
-    results = tester.run_all_tests()
-    
-    # Exit with error code if tests failed
-    if results["failed"] > 0:
+    try:
+        results = tester.run_all_tests()
+        
+        # Exit with error code if tests failed
+        if results and results["failed"] > 0:
+            sys.exit(1)
+        else:
+            sys.exit(0)
+    except Exception as e:
+        print(f"Test execution failed: {e}")
         sys.exit(1)
-    else:
-        sys.exit(0)
