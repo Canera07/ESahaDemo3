@@ -166,15 +166,29 @@ class AuditLog(BaseModel):
 class SupportTicket(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
-    user_email: str
-    user_name: str
+    requester_user_id: str
+    requester_email: str
+    requester_name: str
+    role: str  # user, owner, admin
     subject: str
-    message: str
+    message: str  # Initial message
     status: str = "open"  # open, in_progress, resolved, closed
+    priority: str = "medium"  # low, medium, high
+    assignee_user_id: Optional[str] = None
     admin_response: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SupportMessage(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    ticket_id: str
+    sender_user_id: str
+    sender_name: str
+    sender_role: str
+    body: str
+    attachments: List[str] = []
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class OwnerProfile(BaseModel):
     model_config = ConfigDict(extra="ignore")
