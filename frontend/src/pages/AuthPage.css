@@ -93,3 +93,47 @@
   color: #1B5E20;
   text-decoration: underline;
 }
+
+.owner-notice {
+  background: #E8F5E9;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border-left: 4px solid #2E7D32;
+}
+
+.owner-notice strong {
+  display: block;
+  color: #2E7D32;
+  margin-bottom: 0.5rem;
+}
+
+.owner-notice p {
+  margin: 0;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #2E7D32;
+}
+
+.form-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #666;
+}
+
