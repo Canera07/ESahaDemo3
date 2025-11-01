@@ -42,6 +42,15 @@ function Dashboard() {
                 Panel
               </button>
             )}
+            {user.role === 'admin' && (
+              <button
+                className="nav-link admin-nav"
+                onClick={() => navigate('/admin')}
+                data-testid="nav-admin-panel"
+              >
+                🔧 Admin
+              </button>
+            )}
             <button
               className="nav-link"
               onClick={() => navigate('/profil')}
