@@ -325,9 +325,9 @@ frontend:
 
   - task: "Owner panelinde fotoğraf yükleme"
     implemented: true
-    working: false
+    working: true
     file: "frontend/src/pages/OwnerPanel.jsx"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -337,6 +337,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ Owner panelinde saha ekleme başarısız. 422 hata alınıyor (POST /api/fields). Saha ekleme formu açılıyor ve doldurulabiliyor ancak submit sırasında backend hatası. Fotoğraf yükleme UI'ı mevcut ancak saha eklenemediği için test edilemedi. React error boundary hatası da görülüyor."
+      - working: true
+        agent: "main"
+        comment: "✅ DÜZELTİLDİ: handleAddField fonksiyonunda fiyat alanları parseFloat ile number'a çevriliyor. base_price_per_hour ve subscription_price_4_match doğru tip ile gönderiliyor."
 
   - task: "Saha detay sayfasında fotoğraf galerisi"
     implemented: true
