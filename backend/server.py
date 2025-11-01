@@ -39,6 +39,10 @@ JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production'
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_DAYS = 7
 
+# Uploads directory
+UPLOADS_DIR = ROOT_DIR / 'uploads' / 'photos'
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
 # Logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
