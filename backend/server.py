@@ -72,7 +72,8 @@ class FieldModel(BaseModel):
     price: float  # base_price_per_hour
     base_price_per_hour: float
     subscription_price_4_match: Optional[float] = None
-    photos: List[str] = []
+    photos: List[str] = []  # List of photo URLs
+    cover_photo_url: Optional[str] = None  # Cover photo (first photo if not set)
     phone: str
     tax_number: Optional[str] = None  # tax_id
     iban: Optional[str] = None
