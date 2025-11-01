@@ -76,7 +76,17 @@ function OwnerPanel() {
 
     try {
       const token = localStorage.getItem('session_token');
-      const response = await axios.post(`${API}/fields`, fieldForm, {
+      
+      // Convert price fields to numbers
+      const fieldData = {
+        ...fieldForm,
+        base_price_per_hour: parseFloat(fieldForm.base_price_per_hour),
+        subscription_price_4_match: fieldForm.subscription_price_4_match 
+          ? parseFloat(fieldForm.subscription_price_4_match) 
+          : null
+      };
+      
+      const response = await axios.post(`${API}/fields`, fieldData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
