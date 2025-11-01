@@ -15,6 +15,8 @@ function OwnerPanel() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddField, setShowAddField] = useState(false);
+  const [selectedField, setSelectedField] = useState(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [fieldForm, setFieldForm] = useState({
     name: '',
     city: '',
@@ -94,6 +96,76 @@ function OwnerPanel() {
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Saha eklenemedi');
+    }
+  };
+
+  const handlePhotoUpload = async (fieldId, file) => {
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Desteklenmeyen dosya formatı. Lütfen JPG, PNG veya WEBP yükleyin.');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Dosya boyutu en fazla 5 MB olabilir.');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const token = localStorage.getItem('session_token');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      await axios.post(`${API}/fields/${fieldId}/photos`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      toast.success('Fotoğraf yüklendi!');
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Fotoğraf yüklenemedi');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleDeletePhoto = async (fieldId, photoUrl) => {
+    if (!window.confirm('Bu fotoğrafı silmek istediğinizden emin misiniz?')) return;
+
+    try {
+      const token = localStorage.getItem('session_token');
+      await axios.delete(`${API}/fields/${fieldId}/photos`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { photo_url: photoUrl }
+      });
+
+      toast.success('Fotoğraf silindi');
+      fetchData();
+    } catch (error) {
+      toast.error('Fotoğraf silinemedi');
+    }
+  };
+
+  const handleSetCoverPhoto = async (fieldId, photoUrl) => {
+    try {
+      const token = localStorage.getItem('session_token');
+      await axios.put(`${API}/fields/${fieldId}/cover-photo`, 
+        { photo_url: photoUrl },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+
+      toast.success('Kapak fotoğrafı güncellendi');
+      fetchData();
+    } catch (error) {
+      toast.error('Kapak fotoğrafı güncellenemedi');
     }
   };
 
@@ -277,6 +349,77 @@ function OwnerPanel() {
                     <p>📍 {field.city} - {field.address}</p>
                     <p className="field-price">{field.price} TL/Saat</p>
                     <p>⭐ {field.rating.toFixed(1)} ({field.review_count} değerlendirme)</p>
+                    <p className={`field-status ${field.approved ? 'status-approved' : 'status-pending'}`}>
+                      {field.approved ? '✓ Onaylandı' : '⏳ Onay Bekliyor'}
+                    </p>
+                    
+                    <button 
+                      className="btn btn-secondary"
+                      onClick={() => setSelectedField(field.id === selectedField ? null : field.id)}
+                    >
+                      {selectedField === field.id ? 'Fotoğrafları Gizle' : 'Fotoğrafları Yönet'}
+                    </button>
+
+                    {selectedField === field.id && (
+                      <div className="photo-manager">
+                        <h4>Fotoğraf Galerisi ({field.photos?.length || 0}/10)</h4>
+                        
+                        {/* Photo Upload */}
+                        <div className="photo-upload">
+                          <input
+                            type="file"
+                            id={`photo-upload-${field.id}`}
+                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                            onChange={(e) => handlePhotoUpload(field.id, e.target.files[0])}
+                            disabled={uploadingPhoto || (field.photos?.length >= 10)}
+                            style={{ display: 'none' }}
+                          />
+                          <label 
+                            htmlFor={`photo-upload-${field.id}`}
+                            className={`upload-button ${uploadingPhoto || (field.photos?.length >= 10) ? 'disabled' : ''}`}
+                          >
+                            {uploadingPhoto ? 'Yükleniyor...' : 
+                             (field.photos?.length >= 10) ? 'Maksimum 10 fotoğraf' : '+ Fotoğraf Yükle'}
+                          </label>
+                          <p className="upload-info">JPG, PNG, WEBP - Maks 5MB</p>
+                        </div>
+
+                        {/* Photo Grid */}
+                        {field.photos && field.photos.length > 0 && (
+                          <div className="photo-grid">
+                            {field.photos.map((photo, idx) => (
+                              <div key={idx} className="photo-item">
+                                <img 
+                                  src={`${BACKEND_URL}${photo}`} 
+                                  alt={`${field.name} - ${idx + 1}`}
+                                />
+                                <div className="photo-actions">
+                                  {field.cover_photo_url === photo && (
+                                    <span className="cover-badge">Kapak</span>
+                                  )}
+                                  {field.cover_photo_url !== photo && (
+                                    <button
+                                      onClick={() => handleSetCoverPhoto(field.id, photo)}
+                                      className="btn-icon"
+                                      title="Kapak Yap"
+                                    >
+                                      ⭐
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => handleDeletePhoto(field.id, photo)}
+                                    className="btn-icon btn-danger"
+                                    title="Sil"
+                                  >
+                                    🗑️
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
