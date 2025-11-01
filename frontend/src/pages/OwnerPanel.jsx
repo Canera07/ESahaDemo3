@@ -36,8 +36,30 @@ function OwnerPanel() {
       navigate('/dashboard');
       return;
     }
-    fetchData();
+    checkOwnerProfile();
   }, []);
+
+  const checkOwnerProfile = async () => {
+    try {
+      const token = localStorage.getItem('session_token');
+      const response = await axios.get(`${API}/owner/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.data.has_profile) {
+        setHasProfile(false);
+        toast.error('Lütfen önce owner profilinizi tamamlayın');
+      } else {
+        setHasProfile(true);
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Profile check error:', error);
+      setHasProfile(false);
+    } finally {
+      setCheckingProfile(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
