@@ -228,8 +228,8 @@ class FieldCreate(BaseModel):
     subscription_price_4_match: Optional[float] = None
     photos: List[str] = []
     phone: str
-    tax_number: str  # tax_id - required
-    iban: str  # required
+    tax_number: Optional[str] = None  # DEPRECATED - taken from owner_profile
+    iban: Optional[str] = None  # DEPRECATED - taken from owner_profile
 
 class BookingCreate(BaseModel):
     field_id: str
