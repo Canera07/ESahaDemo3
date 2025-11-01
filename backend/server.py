@@ -294,6 +294,10 @@ async def create_audit_log(admin_id: str, admin_email: str, action: str, target_
 
 @api_router.post("/auth/register")
 async def register(req: RegisterRequest):
+    # Prevent admin registration through public endpoint
+    if req.role == "admin":
+        raise HTTPException(status_code=403, detail="Admin hesapları sadece sistem yöneticileri tarafından oluşturulabilir")
+    
     # Check if user exists
     existing = await db.users.find_one({"email": req.email}, {"_id": 0})
     if existing:
