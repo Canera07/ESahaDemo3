@@ -104,6 +104,7 @@ function App() {
             <Route path="/profil" element={user ? <ProfilPage /> : <Navigate to="/auth" />} />
             <Route path="/takim-arama" element={user ? <TakimAramaPage /> : <Navigate to="/auth" />} />
             <Route path="/owner" element={user && user.role === 'owner' ? <OwnerPanel /> : <Navigate to="/dashboard" />} />
+            <Route path="/admin" element={user && user.role === 'admin' ? <AdminPanel /> : <Navigate to="/dashboard" />} />
           </Routes>
         </BrowserRouter>
         <Toaster position="top-right" richColors />
