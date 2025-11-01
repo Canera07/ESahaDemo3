@@ -14,7 +14,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private val LOCATION_PERMISSION_CODE = 100
-    private val E_SAHA_URL = "https://saharezervtr.preview.emergentagent.com/"
+    private val E_SAHA_URL = "https://pitch-control-1.preview.emergentagent.com/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

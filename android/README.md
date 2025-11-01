@@ -12,7 +12,7 @@ Native Android wrapper application for E-Saha web platform.
 
 ## 🌐 Web URL
 
-The app loads: `https://saharezervtr.preview.emergentagent.com/`
+The app loads: `https://pitch-control-1.preview.emergentagent.com/`
 
 ## ✨ Features
 
