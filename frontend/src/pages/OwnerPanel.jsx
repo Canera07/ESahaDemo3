@@ -203,10 +203,40 @@ function OwnerPanel() {
     }
   };
 
-  if (loading) {
+  if (loading || checkingProfile) {
     return (
       <div className="loading-screen">
         <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  if (!hasProfile) {
+    return (
+      <div className="owner-panel-page">
+        <nav className="navbar">
+          <div className="navbar-content">
+            <div className="logo" onClick={() => navigate('/dashboard')}>E-Saha</div>
+            <div className="nav-links">
+              <button className="nav-link" onClick={() => navigate('/dashboard')}>Dashboard</button>
+              <button className="btn btn-ghost" onClick={logout}>Çıkış</button>
+            </div>
+          </div>
+        </nav>
+
+        <div className="container">
+          <div className="profile-required-message">
+            <h1>⚠️ Owner Profili Gerekli</h1>
+            <p>Saha ekleyebilmek için önce owner profil bilgilerinizi tamamlamanız gerekmektedir.</p>
+            <p>Bu bilgiler ödeme transferleri ve iletişim için gereklidir.</p>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => navigate('/owner/profile-setup')}
+            >
+              Profili Tamamla
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
