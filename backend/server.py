@@ -1096,6 +1096,509 @@ async def mark_notification_read(notif_id: str, user: Dict = Depends(get_current
 #         "message": "Sadakat sistemi devre dışı bırakılmıştır"
 #     }
 
+# ==================== PHOTO UPLOAD ROUTES ====================
+
+@api_router.post("/fields/{field_id}/photos")
+async def upload_field_photo(
+    field_id: str,
+    file: UploadFile = File(...),
+    user: Dict = Depends(get_current_user)
+):
+    """Upload a photo for a field (Owner only)"""
+    # Check if user is owner
+    if user['role'] != 'owner':
+        raise HTTPException(status_code=403, detail="Sadece saha sahipleri fotoğraf yükleyebilir")
+    
+    # Check if field belongs to owner
+    field = await db.fields.find_one({"id": field_id, "owner_id": user['id']}, {"_id": 0})
+    if not field:
+        raise HTTPException(status_code=404, detail="Saha bulunamadı veya size ait değil")
+    
+    # Validate file type
+    allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Desteklenmeyen dosya formatı. Lütfen JPG, PNG veya WEBP yükleyin.")
+    
+    # Check file size (5MB limit)
+    file.file.seek(0, 2)  # Seek to end
+    file_size = file.file.tell()
+    file.file.seek(0)  # Reset to beginning
+    
+    if file_size > 5 * 1024 * 1024:  # 5MB
+        raise HTTPException(status_code=400, detail="Dosya boyutu en fazla 5 MB olabilir.")
+    
+    # Check photo count (max 10)
+    current_photos = field.get('photos', [])
+    if len(current_photos) >= 10:
+        raise HTTPException(status_code=400, detail="En fazla 10 fotoğraf yükleyebilirsiniz.")
+    
+    # Save file
+    timestamp = int(datetime.now().timestamp())
+    file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+    filename = f"{field_id}_{timestamp}.{file_extension}"
+    file_path = UPLOADS_DIR / filename
+    
+    try:
+        with open(file_path, 'wb') as buffer:
+            shutil.copyfileobj(file.file, buffer)
+    except Exception as e:
+        logger.error(f"File upload error: {e}")
+        raise HTTPException(status_code=500, detail="Fotoğraf yüklenemedi, lütfen tekrar deneyin.")
+    
+    # Generate URL
+    photo_url = f"/api/uploads/photos/{filename}"
+    
+    # Update field photos
+    current_photos.append(photo_url)
+    update_data = {"photos": current_photos}
+    
+    # If this is the first photo, set it as cover
+    if len(current_photos) == 1:
+        update_data["cover_photo_url"] = photo_url
+    
+    await db.fields.update_one({"id": field_id}, {"$set": update_data})
+    
+    return {
+        "status": "success",
+        "photo_url": photo_url,
+        "message": "Fotoğraf başarıyla yüklendi"
+    }
+
+@api_router.delete("/fields/{field_id}/photos")
+async def delete_field_photo(
+    field_id: str,
+    photo_url: str,
+    user: Dict = Depends(get_current_user)
+):
+    """Delete a photo from a field"""
+    # Check if user is owner
+    if user['role'] != 'owner':
+        raise HTTPException(status_code=403, detail="Sadece saha sahipleri fotoğraf silebilir")
+    
+    # Check if field belongs to owner
+    field = await db.fields.find_one({"id": field_id, "owner_id": user['id']}, {"_id": 0})
+    if not field:
+        raise HTTPException(status_code=404, detail="Saha bulunamadı")
+    
+    # Remove photo from list
+    photos = field.get('photos', [])
+    if photo_url not in photos:
+        raise HTTPException(status_code=404, detail="Fotoğraf bulunamadı")
+    
+    photos.remove(photo_url)
+    
+    # Delete file
+    try:
+        filename = photo_url.split('/')[-1]
+        file_path = UPLOADS_DIR / filename
+        if file_path.exists():
+            file_path.unlink()
+    except Exception as e:
+        logger.error(f"File deletion error: {e}")
+    
+    # Update field
+    update_data = {"photos": photos}
+    
+    # If deleted photo was cover, set new cover
+    if field.get('cover_photo_url') == photo_url:
+        update_data["cover_photo_url"] = photos[0] if photos else None
+    
+    await db.fields.update_one({"id": field_id}, {"$set": update_data})
+    
+    return {"status": "success", "message": "Fotoğraf silindi"}
+
+@api_router.put("/fields/{field_id}/cover-photo")
+async def set_cover_photo(
+    field_id: str,
+    photo_url: str,
+    user: Dict = Depends(get_current_user)
+):
+    """Set cover photo for a field"""
+    # Check if user is owner
+    if user['role'] != 'owner':
+        raise HTTPException(status_code=403, detail="Sadece saha sahipleri kapak fotoğrafı belirleyebilir")
+    
+    # Check if field belongs to owner
+    field = await db.fields.find_one({"id": field_id, "owner_id": user['id']}, {"_id": 0})
+    if not field:
+        raise HTTPException(status_code=404, detail="Saha bulunamadı")
+    
+    # Check if photo exists in field photos
+    photos = field.get('photos', [])
+    if photo_url not in photos:
+        raise HTTPException(status_code=404, detail="Fotoğraf bulunamadı")
+    
+    # Set as cover
+    await db.fields.update_one({"id": field_id}, {"$set": {"cover_photo_url": photo_url}})
+    
+    return {"status": "success", "message": "Kapak fotoğrafı güncellendi"}
+
+@api_router.get("/uploads/photos/{filename}")
+async def get_photo(filename: str):
+    """Serve uploaded photos"""
+    file_path = UPLOADS_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Fotoğraf bulunamadı")
+    
+    return FileResponse(file_path)
+
+# ==================== ADMIN ROUTES ====================
+
+@api_router.get("/admin/dashboard")
+async def admin_dashboard(admin: Dict = Depends(get_admin_user)):
+    """Get admin dashboard statistics"""
+    # Count statistics
+    total_users = await db.users.count_documents({})
+    total_owners = await db.users.count_documents({"role": "owner"})
+    total_fields = await db.fields.count_documents({})
+    pending_fields = await db.fields.count_documents({"approved": False})
+    total_bookings = await db.bookings.count_documents({})
+    
+    # Revenue calculations
+    bookings = await db.bookings.find({"status": {"$in": ["paid", "confirmed"]}}, {"_id": 0}).to_list(10000)
+    total_revenue = sum(b.get('total_amount_user_paid', 0) for b in bookings)
+    platform_revenue = sum(b.get('platform_fee_amount', 50) for b in bookings)
+    owner_revenue = sum(b.get('owner_share_amount', 0) for b in bookings)
+    
+    # Get recent activities
+    recent_fields = await db.fields.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+    recent_bookings = await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+    
+    return {
+        "statistics": {
+            "total_users": total_users,
+            "total_owners": total_owners,
+            "total_fields": total_fields,
+            "pending_fields": pending_fields,
+            "total_bookings": total_bookings,
+            "total_revenue": total_revenue,
+            "platform_revenue": platform_revenue,
+            "owner_revenue": owner_revenue
+        },
+        "recent_fields": recent_fields,
+        "recent_bookings": recent_bookings
+    }
+
+@api_router.get("/admin/fields")
+async def admin_get_fields(admin: Dict = Depends(get_admin_user), status: Optional[str] = None):
+    """Get all fields with filter options"""
+    query = {}
+    if status == "pending":
+        query["approved"] = False
+    elif status == "approved":
+        query["approved"] = True
+    
+    fields = await db.fields.find(query, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    # Enrich with owner data
+    for field in fields:
+        owner = await db.users.find_one({"id": field['owner_id']}, {"_id": 0})
+        if owner:
+            field['owner_name'] = owner['name']
+            field['owner_email'] = owner['email']
+            field['owner_phone'] = owner.get('phone', '')
+    
+    return {"fields": fields}
+
+@api_router.post("/admin/fields/{field_id}/approve")
+async def admin_approve_field(field_id: str, admin: Dict = Depends(get_admin_user)):
+    """Approve a field"""
+    field = await db.fields.find_one({"id": field_id}, {"_id": 0})
+    if not field:
+        raise HTTPException(status_code=404, detail="Saha bulunamadı")
+    
+    # Update field
+    await db.fields.update_one(
+        {"id": field_id},
+        {"$set": {
+            "approved": True,
+            "tax_verified": True,
+            "subscription_prices_pending_review": False
+        }}
+    )
+    
+    # Create audit log
+    await create_audit_log(
+        admin['id'],
+        admin['email'],
+        "approve_field",
+        "field",
+        field_id,
+        {"field_name": field['name'], "owner_id": field['owner_id']}
+    )
+    
+    # Notify owner
+    notif = Notification(
+        user_id=field['owner_id'],
+        type="booking",
+        message=f"Sahanız '{field['name']}' onaylandı ve yayına alındı!"
+    )
+    notif_dict = notif.model_dump()
+    notif_dict['created_at'] = notif_dict['created_at'].isoformat()
+    await db.notifications.insert_one(notif_dict)
+    
+    return {"status": "success", "message": "Saha onaylandı"}
+
+@api_router.post("/admin/fields/{field_id}/reject")
+async def admin_reject_field(field_id: str, reason: str, admin: Dict = Depends(get_admin_user)):
+    """Reject a field"""
+    field = await db.fields.find_one({"id": field_id}, {"_id": 0})
+    if not field:
+        raise HTTPException(status_code=404, detail="Saha bulunamadı")
+    
+    # Create audit log
+    await create_audit_log(
+        admin['id'],
+        admin['email'],
+        "reject_field",
+        "field",
+        field_id,
+        {"field_name": field['name'], "owner_id": field['owner_id'], "reason": reason}
+    )
+    
+    # Notify owner
+    notif = Notification(
+        user_id=field['owner_id'],
+        type="booking",
+        message=f"Sahanız '{field['name']}' reddedildi. Sebep: {reason}"
+    )
+    notif_dict = notif.model_dump()
+    notif_dict['created_at'] = notif_dict['created_at'].isoformat()
+    await db.notifications.insert_one(notif_dict)
+    
+    return {"status": "success", "message": "Saha reddedildi"}
+
+@api_router.get("/admin/users")
+async def admin_get_users(admin: Dict = Depends(get_admin_user), role: Optional[str] = None):
+    """Get all users"""
+    query = {}
+    if role:
+        query["role"] = role
+    
+    users = await db.users.find(query, {"_id": 0, "password": 0}).sort("created_at", -1).to_list(10000)
+    
+    return {"users": users}
+
+@api_router.post("/admin/users/{user_id}/suspend")
+async def admin_suspend_user(user_id: str, admin: Dict = Depends(get_admin_user)):
+    """Suspend a user account"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+    
+    if user['role'] == 'admin':
+        raise HTTPException(status_code=403, detail="Admin hesapları askıya alınamaz")
+    
+    # Add suspended flag
+    await db.users.update_one({"id": user_id}, {"$set": {"suspended": True}})
+    
+    # Create audit log
+    await create_audit_log(
+        admin['id'],
+        admin['email'],
+        "suspend_user",
+        "user",
+        user_id,
+        {"user_email": user['email'], "user_name": user['name']}
+    )
+    
+    return {"status": "success", "message": "Kullanıcı askıya alındı"}
+
+@api_router.post("/admin/users/{user_id}/unsuspend")
+async def admin_unsuspend_user(user_id: str, admin: Dict = Depends(get_admin_user)):
+    """Unsuspend a user account"""
+    await db.users.update_one({"id": user_id}, {"$set": {"suspended": False}})
+    
+    # Create audit log
+    await create_audit_log(
+        admin['id'],
+        admin['email'],
+        "unsuspend_user",
+        "user",
+        user_id,
+        {}
+    )
+    
+    return {"status": "success", "message": "Kullanıcı aktif hale getirildi"}
+
+@api_router.delete("/admin/users/{user_id}")
+async def admin_delete_user(user_id: str, admin: Dict = Depends(get_admin_user)):
+    """Delete a user account"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+    
+    if user['role'] == 'admin':
+        raise HTTPException(status_code=403, detail="Admin hesapları silinemez")
+    
+    # Delete user
+    await db.users.delete_one({"id": user_id})
+    
+    # Create audit log
+    await create_audit_log(
+        admin['id'],
+        admin['email'],
+        "delete_user",
+        "user",
+        user_id,
+        {"user_email": user['email'], "user_name": user['name']}
+    )
+    
+    return {"status": "success", "message": "Kullanıcı silindi"}
+
+@api_router.get("/admin/bookings")
+async def admin_get_bookings(admin: Dict = Depends(get_admin_user)):
+    """Get all bookings"""
+    bookings = await db.bookings.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
+    
+    # Enrich with user and field data
+    for booking in bookings:
+        user = await db.users.find_one({"id": booking['user_id']}, {"_id": 0})
+        if user:
+            booking['user_name'] = user['name']
+            booking['user_email'] = user['email']
+        
+        field = await db.fields.find_one({"id": booking['field_id']}, {"_id": 0})
+        if field:
+            booking['field_name'] = field['name']
+            booking['field_city'] = field['city']
+    
+    return {"bookings": bookings}
+
+@api_router.get("/admin/analytics")
+async def admin_analytics(admin: Dict = Depends(get_admin_user)):
+    """Get analytics data"""
+    # Get bookings by status
+    confirmed_bookings = await db.bookings.count_documents({"status": {"$in": ["paid", "confirmed"]}})
+    cancelled_bookings = await db.bookings.count_documents({"status": "cancelled"})
+    
+    # Revenue by month (last 12 months)
+    from datetime import date
+    monthly_revenue = []
+    
+    for month_offset in range(12):
+        start_date = date.today().replace(day=1) - timedelta(days=30 * month_offset)
+        end_date = (start_date + timedelta(days=32)).replace(day=1)
+        
+        bookings = await db.bookings.find({
+            "status": {"$in": ["paid", "confirmed"]},
+            "created_at": {
+                "$gte": start_date.isoformat(),
+                "$lt": end_date.isoformat()
+            }
+        }, {"_id": 0}).to_list(10000)
+        
+        revenue = sum(b.get('total_amount_user_paid', 0) for b in bookings)
+        monthly_revenue.insert(0, {
+            "month": start_date.strftime("%Y-%m"),
+            "revenue": revenue,
+            "booking_count": len(bookings)
+        })
+    
+    # Top fields by bookings
+    pipeline = [
+        {"$match": {"status": {"$in": ["paid", "confirmed"]}}},
+        {"$group": {"_id": "$field_id", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    
+    top_fields_data = await db.bookings.aggregate(pipeline).to_list(10)
+    top_fields = []
+    for item in top_fields_data:
+        field = await db.fields.find_one({"id": item['_id']}, {"_id": 0})
+        if field:
+            top_fields.append({
+                "field_name": field['name'],
+                "city": field['city'],
+                "booking_count": item['count']
+            })
+    
+    return {
+        "booking_stats": {
+            "confirmed": confirmed_bookings,
+            "cancelled": cancelled_bookings
+        },
+        "monthly_revenue": monthly_revenue,
+        "top_fields": top_fields
+    }
+
+@api_router.get("/admin/audit-logs")
+async def admin_get_audit_logs(admin: Dict = Depends(get_admin_user), limit: int = 100):
+    """Get audit logs"""
+    logs = await db.audit_logs.find({}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    return {"logs": logs}
+
+@api_router.get("/admin/support-tickets")
+async def admin_get_support_tickets(admin: Dict = Depends(get_admin_user)):
+    """Get all support tickets"""
+    tickets = await db.support_tickets.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return {"tickets": tickets}
+
+@api_router.post("/support/ticket")
+async def create_support_ticket(
+    subject: str,
+    message: str,
+    user: Dict = Depends(get_current_user)
+):
+    """Create a support ticket"""
+    ticket = SupportTicket(
+        user_id=user['id'],
+        user_email=user['email'],
+        user_name=user['name'],
+        subject=subject,
+        message=message
+    )
+    
+    ticket_dict = ticket.model_dump()
+    ticket_dict['created_at'] = ticket_dict['created_at'].isoformat()
+    ticket_dict['updated_at'] = ticket_dict['updated_at'].isoformat()
+    
+    await db.support_tickets.insert_one(ticket_dict)
+    
+    return {"status": "success", "message": "Destek talebiniz oluşturuldu", "ticket_id": ticket.id}
+
+# ==================== STARTUP EVENT ====================
+
+@app.on_event("startup")
+async def create_default_admin():
+    """Create default admin account if it doesn't exist"""
+    admin_email = "cnrakbb070@hotmail.com"
+    admin_password = "Canerak07"
+    
+    # Check if admin exists
+    existing_admin = await db.users.find_one({"email": admin_email}, {"_id": 0})
+    if existing_admin:
+        logger.info("Default admin account already exists")
+        return
+    
+    # Create admin account
+    admin_user = User(
+        email=admin_email,
+        password=hash_password(admin_password),
+        name="E-Saha Admin",
+        role="admin"
+    )
+    
+    admin_dict = admin_user.model_dump()
+    admin_dict['created_at'] = admin_dict['created_at'].isoformat()
+    
+    await db.users.insert_one(admin_dict)
+    logger.info(f"Default admin account created: {admin_email}")
+    
+    # Create audit log for admin creation
+    log = AuditLog(
+        admin_id="system",
+        admin_email="system",
+        action="create_admin",
+        target_type="user",
+        target_id=admin_user.id,
+        details={"email": admin_email}
+    )
+    log_dict = log.model_dump()
+    log_dict['created_at'] = log_dict['created_at'].isoformat()
+    await db.audit_logs.insert_one(log_dict)
+
 # Include the router in the main app
 app.include_router(api_router)
 
