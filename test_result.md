@@ -380,11 +380,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Owner panelinde saha ekleme 422 hatası"
-  stuck_tasks:
-    - "Owner panelinde fotoğraf yükleme"
-  test_all: false
-  test_priority: "high_first"
+    - "Tamamlandı"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "completed"
 
 agent_communication:
   - agent: "main"
