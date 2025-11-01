@@ -494,8 +494,27 @@ async def get_field(field_id: str):
 
 @api_router.post("/fields")
 async def create_field(field: FieldCreate, user: Dict = Depends(get_current_user)):
+    # Check if user has owner role
     if user['role'] != 'owner':
-        raise HTTPException(status_code=403, detail="Only owners can create fields")
+        raise HTTPException(
+            status_code=403, 
+            detail="Saha eklemek için Owner hesabınız olmalı. Lütfen Owner olarak kaydolun."
+        )
+    
+    # Check if owner profile exists and is active
+    owner_profile = await db.owner_profiles.find_one({"user_id": user['id']}, {"_id": 0})
+    
+    if not owner_profile:
+        raise HTTPException(
+            status_code=403,
+            detail="Saha eklemek için önce Owner Profilinizi tamamlamanız gerekiyor. Lütfen profil bilgilerinizi girin (Vergi No, IBAN, Telefon)."
+        )
+    
+    if owner_profile.get('status') not in ['active', 'verified']:
+        raise HTTPException(
+            status_code=403,
+            detail=f"Owner hesabınız henüz aktif değil. Durum: {owner_profile.get('status', 'unknown')}. Lütfen destek ile iletişime geçin."
+        )
     
     # Validate required fields
     if not field.tax_number or not field.iban:
@@ -509,8 +528,9 @@ async def create_field(field: FieldCreate, user: Dict = Depends(get_current_user
     if not field.iban.strip().startswith('TR') or len(field.iban.strip()) < 20:
         raise HTTPException(status_code=400, detail="Geçersiz IBAN formatı (TR ile başlamalı)")
     
+    # SECURITY: Force owner_id to be the authenticated user
     new_field = FieldModel(
-        owner_id=user['id'],
+        owner_id=user['id'],  # ENFORCED - always use authenticated user
         name=field.name,
         city=field.city,
         address=field.address,
@@ -531,6 +551,8 @@ async def create_field(field: FieldCreate, user: Dict = Depends(get_current_user
     field_dict['created_at'] = field_dict['created_at'].isoformat()
     
     result = await db.fields.insert_one(field_dict)
+    
+    logger.info(f"Field created: {field_dict['id']} by owner {user['id']} ({user['email']})")
     
     # Return the field data without MongoDB _id
     return {"status": "success", "field": {
